@@ -49,6 +49,11 @@ body {
   gap: 12px;
   padding-bottom: 16px;
   border-bottom: 2px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 20;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 
 .header-left { flex: 1; min-width: 200px; }
@@ -331,6 +336,7 @@ textarea.main-ta:focus { border-color: var(--accent); }
   padding: 5px 12px; cursor: pointer;
   transition: color 0.15s, border-color 0.15s, background 0.15s;
   white-space: nowrap; display: inline-flex; align-items: center;
+  position: relative; overflow: hidden;
 }
 .hbtn:hover { color: var(--red); border-color: var(--red); }
 .hbtn.blue { color: var(--blue); border-color: var(--blue); }
@@ -338,7 +344,17 @@ textarea.main-ta:focus { border-color: var(--accent); }
 .hbtn.green { color: var(--accent); border-color: var(--accent); }
 .hbtn.green:hover { background: var(--accent-dim); }
 
+/* Standalone file inputs (triggered by JS) */
 input[type=file] { display: none; }
+/* Label-wrapped file inputs: cover full label area, tappable on all mobile browsers */
+label.hbtn input[type=file] {
+  display: block;
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
 
 /* B Add area */
 .add-b-row { display: flex; gap: 8px; align-items: flex-start; flex-wrap: wrap; }
