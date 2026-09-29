@@ -649,10 +649,8 @@ td { padding: 8px 14px; vertical-align: middle; color: var(--text); white-space:
 
       <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
         <button class="hbtn" style="color:var(--blue);border-color:var(--blue)" onclick="toggleDateCheck()">📅 检查日期</button>
-        <label class="hbtn blue" style="cursor:pointer">
-          ⬆ 导入JSON
-          <input type="file" accept=".json,application/json" onchange="handleBImport(this.files[0]);this.value=''">
-        </label>
+        <button class="hbtn blue" onclick="document.getElementById('fileBImport').click()">⬆ 导入JSON</button>
+        <input type="file" id="fileBImport" accept=".json,application/json" onchange="handleBImport(this.files[0]);this.value=''" style="display:none">
         <button class="hbtn blue" onclick="exportBJSON()">⬇ 导出JSON</button>
       </div>
 
@@ -671,10 +669,8 @@ H-4-2626 (49186)
 33.33
 ..."></textarea>
         <div class="add-b-btns">
-          <label class="hbtn blue" style="cursor:pointer">
-            📂 载入文件
-            <input type="file" accept=".txt,text/plain" onchange="loadFileToAdd(this.files[0]);this.value=''">
-          </label>
+          <button class="hbtn blue" onclick="document.getElementById('fileBAdd').click()">📂 载入文件</button>
+          <input type="file" id="fileBAdd" accept=".txt,text/plain" onchange="loadFileToAdd(this.files[0]);this.value=''" style="display:none">
           <button class="hbtn green" onclick="addToDatabase()">＋ 添加到资料库</button>
           <button class="hbtn" onclick="document.getElementById('inputBAdd').value=''">✕ 清空</button>
         </div>
