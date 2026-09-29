@@ -1637,6 +1637,11 @@ function handleBImport(file) {
   reader.readAsText(file, 'UTF-8');
 }
 
+// 切回标签页时确保 UI 是最新状态
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) { refreshAUI(); refreshBUI(); }
+});
+
 // ── Init ──
 refreshAUI();
 refreshBUI();
