@@ -1,0 +1,1567 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>单据匹配工具 v2</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+
+:root {
+  --bg: #0d0f12;
+  --surface: #141619;
+  --surface2: #1c1f24;
+  --border: #272b33;
+  --accent: #00d4a0;
+  --accent-dim: rgba(0,212,160,0.12);
+  --blue: #3d9eff;
+  --blue-dim: rgba(61,158,255,0.12);
+  --warn: #ff6b35;
+  --warn-dim: rgba(255,107,53,0.1);
+  --red: #e03333;
+  --red-dim: rgba(224,51,51,0.13);
+  --text: #dde1e9;
+  --muted: #5a6170;
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'IBM Plex Sans', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  min-height: 100vh;
+  padding: 28px 16px 80px;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.wrap { max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
+
+/* ── Header ── */
+.header {
+  margin-bottom: 28px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.header-left { flex: 1; min-width: 260px; }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--accent);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  border: 1px solid rgba(0,212,160,0.35);
+  padding: 4px 12px;
+  margin-bottom: 12px;
+  background: var(--accent-dim);
+}
+.badge::before { content: '◆'; font-size: 8px; }
+
+h1 {
+  font-family: var(--mono);
+  font-size: clamp(20px, 3.5vw, 32px);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+h1 em { font-style: normal; color: var(--accent); }
+
+.desc {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  font-family: var(--mono);
+  line-height: 1.6;
+}
+
+/* ── Header right actions ── */
+.header-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  padding-top: 6px;
+}
+
+.quick-bar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.qbtn {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  padding: 8px 16px;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  transition: all 0.15s;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+.qbtn:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-dim); }
+
+.qbtn-paste { border-color: rgba(61,158,255,0.5); color: var(--blue); }
+.qbtn-paste:hover { background: var(--blue-dim); }
+
+.qbtn-add { border-color: var(--accent); color: var(--accent); }
+.qbtn-add:hover { background: var(--accent-dim); }
+
+.qbtn-clear { border-color: var(--red); color: var(--red); background: var(--red-dim); }
+.qbtn-clear:hover { opacity: 0.8; }
+
+.paste-preview {
+  display: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--blue);
+  padding: 8px 12px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  max-height: 70px;
+  overflow-y: auto;
+  max-width: 380px;
+  text-align: left;
+  white-space: pre-wrap;
+  word-break: break-all;
+  line-height: 1.5;
+}
+.paste-preview.show { display: block; }
+.paste-label {
+  font-size: 10px;
+  color: var(--blue);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 3px;
+}
+
+/* ── DB sections ── */
+.db-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 18px 20px;
+  margin-bottom: 16px;
+}
+
+.db-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.db-title {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.db-title-a { color: var(--accent); }
+.db-title-b { color: var(--blue); }
+
+.db-total {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+}
+.db-total em { font-style: normal; font-weight: 600; }
+.db-total-a em { color: var(--accent); }
+.db-total-b em { color: var(--blue); }
+
+/* ── Tag lists ── */
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+  min-height: 32px;
+  align-items: center;
+}
+
+.cust-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: 4px 8px 4px 10px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text);
+}
+.cust-tag .tag-count { color: var(--accent); font-size: 10px; }
+
+.tag-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 10px;
+  padding: 1px 4px;
+  line-height: 1;
+  font-family: var(--mono);
+  transition: color 0.15s;
+  border-left: 1px solid var(--border);
+  margin-left: 2px;
+  color: var(--muted);
+}
+.tag-btn:hover { color: var(--accent); }
+.tag-del:hover { color: var(--warn) !important; }
+
+.month-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: 4px 10px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text);
+}
+.month-tag em { font-style: normal; color: var(--blue); font-size: 10px; }
+.month-tag .del-month {
+  background: none; border: none; color: var(--muted);
+  cursor: pointer; font-size: 13px; padding: 0 0 0 4px;
+  line-height: 1; transition: color 0.15s;
+}
+.month-tag .del-month:hover { color: var(--warn); }
+
+.no-data { font-family: var(--mono); font-size: 12px; color: var(--muted); font-style: italic; }
+
+/* ── New customer row ── */
+.new-cust-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.new-cust-row input[type=text] {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 7px 12px;
+  outline: none;
+  width: 220px;
+  transition: border-color 0.2s;
+}
+.new-cust-row input[type=text]:focus { border-color: var(--accent); }
+.new-cust-row input[type=text]::placeholder { color: var(--muted); }
+
+/* ── Add B data ── */
+.add-b-row { display: flex; gap: 8px; align-items: flex-start; flex-wrap: wrap; }
+.add-b-row textarea {
+  flex: 1; min-width: 200px;
+  background: var(--bg); border: 1px solid var(--border);
+  color: var(--text); font-family: var(--mono); font-size: 12px;
+  line-height: 1.6; padding: 10px 12px; outline: none;
+  resize: vertical; min-height: 100px; transition: border-color 0.2s;
+}
+.add-b-row textarea:focus { border-color: var(--blue); }
+.add-b-row textarea::placeholder { color: var(--muted); }
+.add-b-btns { display: flex; flex-direction: column; gap: 6px; }
+
+/* ── Small header buttons ── */
+.hbtn {
+  background: transparent; border: 1px solid var(--border);
+  color: var(--muted); font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 3px 10px; cursor: pointer;
+  transition: color 0.15s, border-color 0.15s; white-space: nowrap;
+}
+.hbtn:hover { color: var(--warn); border-color: var(--warn); }
+.hbtn.blue:hover { color: var(--blue); border-color: var(--blue); }
+.hbtn.green:hover { color: var(--accent); border-color: var(--accent); }
+
+input[type=file] { display: none; }
+
+/* ── Input grid ── */
+.input-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+@media(max-width: 720px) { .input-row { grid-template-columns: 1fr; } }
+
+.panel { background: var(--surface); border: 1px solid var(--border); padding: 18px 20px; }
+
+.panel-header {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 12px; flex-wrap: wrap;
+}
+
+.panel-label {
+  font-family: var(--mono); font-size: 11px;
+  letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600;
+}
+.panel-a .panel-label { color: var(--accent); }
+.panel-hint { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+
+.cust-loaded-label {
+  font-family: var(--mono); font-size: 11px;
+  color: var(--accent); margin-left: auto;
+}
+
+textarea.main-ta {
+  width: 100%; background: var(--bg); border: 1px solid var(--border);
+  color: var(--text); font-family: var(--mono); font-size: 12px;
+  line-height: 1.65; padding: 14px; resize: vertical; outline: none;
+  min-height: 240px; transition: border-color 0.2s;
+}
+textarea.main-ta::placeholder { color: var(--muted); }
+.panel-a textarea.main-ta:focus { border-color: var(--accent); }
+
+.counter {
+  margin-top: 7px; font-family: var(--mono); font-size: 11px;
+  color: var(--muted); text-align: right; min-height: 15px;
+}
+.panel-a .counter em { color: var(--accent); font-style: normal; }
+
+/* ── Customer dropdown ── */
+.cust-drop-wrap { position: relative; display: inline-block; }
+
+.cust-drop-panel {
+  display: none; position: absolute; top: calc(100% + 4px); left: 0;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-top: 2px solid var(--accent);
+  z-index: 50; min-width: 240px; max-height: 280px;
+  overflow-y: auto; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+.cust-drop-panel.show { display: block; }
+
+.drop-search-row { padding: 8px 10px; border-bottom: 1px solid var(--border); }
+.drop-search-row input {
+  width: 100%; background: var(--bg); border: 1px solid var(--border);
+  color: var(--text); font-family: var(--mono); font-size: 11px;
+  padding: 5px 8px; outline: none;
+}
+.drop-search-row input:focus { border-color: var(--accent); }
+.drop-search-row input::placeholder { color: var(--muted); }
+
+.drop-item {
+  padding: 9px 14px; font-family: var(--mono); font-size: 12px;
+  color: var(--text); cursor: pointer; display: flex;
+  justify-content: space-between; align-items: center;
+  transition: background 0.1s; border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.drop-item:hover { background: rgba(0,212,160,0.08); color: var(--accent); }
+.drop-item .di-count { font-size: 10px; color: var(--muted); }
+.drop-empty {
+  padding: 12px 14px; font-family: var(--mono); font-size: 11px;
+  color: var(--muted); font-style: italic;
+}
+
+/* ── Action bar ── */
+.action-bar {
+  display: flex; gap: 10px; align-items: center;
+  margin-bottom: 24px; flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 10px 22px; font-family: var(--mono); font-size: 12px;
+  font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  cursor: pointer; border: none; transition: opacity 0.15s, transform 0.1s;
+  white-space: nowrap;
+}
+.btn:active { transform: scale(0.97); }
+.btn-match { background: var(--accent); color: #0d0f12; }
+.btn-match:hover { opacity: 0.88; }
+.btn-export { background: transparent; color: var(--blue); border: 1px solid var(--blue); }
+.btn-export:hover { background: var(--blue-dim); }
+.btn-export:disabled { opacity: 0.3; cursor: not-allowed; }
+.btn-sm {
+  background: transparent; color: var(--muted);
+  border: 1px solid var(--border); font-size: 11px; padding: 10px 14px;
+}
+.btn-sm:hover { color: var(--warn); border-color: var(--warn); }
+
+.stat-row {
+  margin-left: auto; display: flex; gap: 16px;
+  font-family: var(--mono); font-size: 11px; color: var(--muted);
+}
+.stat-row span em { font-style: normal; font-weight: 600; }
+.stat-row .s-match em { color: var(--accent); }
+.stat-row .s-total em { color: var(--text); }
+
+/* ── Results ── */
+.results-wrap { display: none; }
+.results-wrap.show { display: block; }
+
+.section-title {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
+  display: flex; align-items: center; gap: 10px;
+}
+.section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+.table-scroll {
+  overflow-x: auto; background: var(--surface);
+  border: 1px solid var(--border); margin-bottom: 20px;
+}
+
+table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12px; min-width: 600px; }
+thead tr { background: var(--surface2); border-bottom: 1px solid var(--border); }
+th {
+  padding: 10px 14px; text-align: left; font-size: 10px;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--muted); font-weight: 600; white-space: nowrap;
+}
+tbody tr { border-bottom: 1px solid rgba(255,255,255,0.04); transition: background 0.1s; }
+tbody tr:hover { background: var(--surface2); }
+td { padding: 9px 14px; vertical-align: middle; color: var(--text); white-space: nowrap; }
+.td-docno { font-weight: 600; color: var(--accent); }
+.td-date { color: var(--muted); }
+.td-amt { text-align: right; color: var(--blue); }
+
+/* ── Toast ── */
+.toast {
+  position: fixed; bottom: 24px; right: 20px;
+  background: var(--surface2); border: 1px solid var(--border);
+  padding: 10px 18px; font-family: var(--mono); font-size: 12px;
+  color: var(--accent); z-index: 999; opacity: 0;
+  transform: translateY(8px); transition: all 0.25s;
+  pointer-events: none; max-width: 300px; line-height: 1.5;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.warn { color: var(--warn); border-color: var(--warn); }
+.toast.err { color: var(--red); border-color: var(--red); }
+
+/* ── Overlays ── */
+.overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.75); z-index: 100;
+  align-items: center; justify-content: center; padding: 20px;
+}
+.overlay.show { display: flex; }
+
+/* Confirm dialog */
+.dialog {
+  background: var(--surface2); border: 1px solid var(--border);
+  padding: 24px 28px; max-width: 360px; width: 90%;
+}
+.dialog-title { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--warn); margin-bottom: 10px; }
+.dialog-msg { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-bottom: 20px; line-height: 1.7; white-space: pre-line; }
+.dialog-btns { display: flex; gap: 10px; justify-content: flex-end; }
+.dialog-btns button {
+  font-family: var(--mono); font-size: 11px; padding: 7px 16px;
+  cursor: pointer; border: 1px solid var(--border); background: transparent;
+  color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; transition: all 0.15s;
+}
+.dialog-btns .confirm-del { color: var(--warn); border-color: var(--warn); }
+.dialog-btns button:hover { opacity: 0.8; }
+
+/* Manage modal */
+.manage-modal {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-top: 2px solid var(--accent); width: 90%; max-width: 680px;
+  max-height: 82vh; display: flex; flex-direction: column;
+}
+.manage-header {
+  padding: 14px 20px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+}
+.manage-title { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--accent); flex: 1; }
+.manage-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
+.manage-footer {
+  padding: 12px 20px; border-top: 1px solid var(--border);
+  display: flex; gap: 8px; flex-wrap: wrap; flex-shrink: 0;
+}
+
+.manage-table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12px; }
+.manage-table th {
+  padding: 8px 12px; text-align: left; font-size: 10px;
+  letter-spacing: 0.1em; color: var(--muted); background: var(--surface);
+  border-bottom: 1px solid var(--border); white-space: nowrap;
+}
+.manage-table td { padding: 7px 12px; border-bottom: 1px solid rgba(255,255,255,0.04); color: var(--text); }
+.manage-table tr:hover td { background: rgba(255,255,255,0.03); }
+.manage-table .del-rec {
+  background: none; border: none; color: var(--muted); cursor: pointer;
+  font-size: 14px; padding: 0; line-height: 1; transition: color 0.15s; font-family: var(--mono);
+}
+.manage-table .del-rec:hover { color: var(--warn); }
+
+.manage-add-ta {
+  width: 100%; background: var(--bg); border: 1px solid var(--border);
+  color: var(--text); font-family: var(--mono); font-size: 11px;
+  padding: 8px 10px; resize: vertical; min-height: 70px; outline: none;
+  transition: border-color 0.2s; flex: 1;
+}
+.manage-add-ta:focus { border-color: var(--accent); }
+.manage-add-ta::placeholder { color: var(--muted); }
+.manage-add-col { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 200px; }
+.manage-add-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* Customer select modal */
+.cust-sel-modal {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-top: 2px solid var(--blue); width: 90%; max-width: 360px;
+  max-height: 70vh; display: flex; flex-direction: column;
+}
+.cust-sel-header { padding: 14px 18px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.cust-sel-title { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--blue); margin-bottom: 8px; }
+.cust-sel-search {
+  width: 100%; background: var(--bg); border: 1px solid var(--border);
+  color: var(--text); font-family: var(--mono); font-size: 12px;
+  padding: 6px 10px; outline: none; transition: border-color 0.2s;
+}
+.cust-sel-search:focus { border-color: var(--blue); }
+.cust-sel-search::placeholder { color: var(--muted); }
+.cust-sel-body { flex: 1; overflow-y: auto; }
+.cust-sel-item {
+  padding: 10px 18px; font-family: var(--mono); font-size: 12px;
+  color: var(--text); cursor: pointer; display: flex;
+  justify-content: space-between; align-items: center;
+  border-bottom: 1px solid rgba(255,255,255,0.04); transition: background 0.1s;
+}
+.cust-sel-item:hover { background: var(--blue-dim); color: var(--blue); }
+.cust-sel-item .si-count { font-size: 10px; color: var(--muted); }
+.cust-sel-footer { padding: 10px 18px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; flex-shrink: 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ══════════════════════════════════════════════════
+       HEADER
+  ══════════════════════════════════════════════════ -->
+  <div class="header">
+    <div class="header-left">
+      <div class="badge">单据匹配系统 v2</div>
+      <h1>单据号码 <em>匹配工具</em></h1>
+      <p class="desc">A / B 组资料均永久保存于本机 · A 组按顾客名字管理 · B 组按月份管理</p>
+    </div>
+
+    <div class="header-actions">
+      <div class="quick-bar">
+        <button class="qbtn qbtn-paste" onclick="quickPaste()">⬆ 粘贴</button>
+        <button class="qbtn qbtn-add" onclick="quickAdd()">＋ 添加</button>
+        <button class="qbtn qbtn-clear" onclick="confirmClearAll()">✕ 清空所有资料</button>
+      </div>
+      <div class="paste-preview" id="pastePreview">
+        <span class="paste-label">剪贴板预览</span>
+        <span id="pastePreviewText"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════
+       A 组 顾客资料库
+  ══════════════════════════════════════════════════ -->
+  <div class="db-section">
+    <div class="db-header">
+      <span class="db-title db-title-a">A 组 — 顾客资料库</span>
+      <span class="db-total db-total-a">已储存 <em id="adbTotal">0</em> 条记录，共 <em id="adbCount">0</em> 位顾客</span>
+    </div>
+
+    <div class="tag-list" id="custList">
+      <span class="no-data">（尚无顾客，请在下方新建）</span>
+    </div>
+
+    <div class="new-cust-row">
+      <input type="text" id="newCustName" placeholder="输入顾客名字…" onkeydown="if(event.key==='Enter')addCustomer()">
+      <button class="hbtn green" onclick="addCustomer()" style="border-color:var(--accent);color:var(--accent)">＋ 新建顾客</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════
+       B 组资料库
+  ══════════════════════════════════════════════════ -->
+  <div class="db-section">
+    <div class="db-header">
+      <span class="db-title db-title-b">B 组 — 资料库</span>
+      <span class="db-total db-total-b">已储存 <em id="dbTotal">0</em> 条记录，共 <em id="dbMonths">0</em> 个月份</span>
+    </div>
+
+    <div class="tag-list" id="monthList">
+      <span class="no-data">（资料库是空的，请在下方添加）</span>
+    </div>
+
+    <div style="margin-bottom:12px">
+      <button class="hbtn" style="color:var(--accent);border-color:var(--accent)" onclick="toggleDateCheck()">📅 检查日期完整性</button>
+    </div>
+
+    <div id="dateCheckPanel" style="display:none;margin-bottom:14px;background:var(--bg);border:1px solid var(--border);padding:14px 16px">
+      <div id="dateCheckContent" style="font-family:var(--mono);font-size:12px;line-height:1.9"></div>
+    </div>
+
+    <div class="add-b-row">
+      <textarea id="inputBAdd" placeholder="在此粘贴新的 B 组资料，按「添加到资料库」存入...
+
+资料会自动按日期分月储存，关闭浏览器也不会消失。
+例：
+(2026-03-26)
+H-4-2626 (49186)
+1 B IBOX
+33.33
+..."></textarea>
+      <div class="add-b-btns">
+        <input type="file" id="fileBAdd" accept=".txt,text/plain" onchange="loadFileToAdd()">
+        <button class="hbtn blue" onclick="document.getElementById('fileBAdd').click()">📂 载入文件</button>
+        <button class="hbtn green" onclick="addToDatabase()" style="border-color:var(--accent);color:var(--accent)">＋ 添加到资料库</button>
+        <button class="hbtn" onclick="document.getElementById('inputBAdd').value='';document.getElementById('fileBAdd').value=''">✕ 清空</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════
+       A 组 + B 组 预览输入区
+  ══════════════════════════════════════════════════ -->
+  <div class="input-row">
+    <!-- A 组 -->
+    <div class="panel panel-a">
+      <div class="panel-header">
+        <span class="panel-label">A 组 — 单据来源</span>
+        <!-- Customer dropdown -->
+        <div class="cust-drop-wrap" id="custDropWrap">
+          <button class="hbtn green" onclick="toggleCustDrop()" style="border-color:var(--accent);color:var(--accent)">顾客 ▾</button>
+          <div class="cust-drop-panel" id="custDropPanel">
+            <div class="drop-search-row">
+              <input type="text" id="dropSearchInput" placeholder="搜索顾客…" oninput="renderCustDrop()" onclick="event.stopPropagation()">
+            </div>
+            <div id="dropList"></div>
+          </div>
+        </div>
+        <span class="cust-loaded-label" id="loadedCustLabel"></span>
+        <input type="file" id="fileA" accept=".txt,text/plain" onchange="loadFile('A')">
+        <button class="hbtn blue" onclick="document.getElementById('fileA').click()">📂 文件</button>
+        <button class="hbtn" onclick="clearPanelA()">✕</button>
+      </div>
+      <textarea class="main-ta" id="inputA" placeholder="两种模式皆可：
+
+【模式一】贴入完整单据（自动提取日期）：
+26.03.02 1659
+(34789)
+...
+
+【模式二】直接输入5位号码（每行一个）：
+34789
+35162
+日期将自动取自 B 组
+
+或点击上方「顾客 ▾」载入已保存的顾客资料"></textarea>
+      <div class="counter" id="counterA">—</div>
+    </div>
+
+    <!-- B 组预览 -->
+    <div class="panel" style="border-color: rgba(61,158,255,0.3)">
+      <div class="panel-header">
+        <span class="panel-label" style="color:var(--blue)">B 组 — 资料库预览</span>
+      </div>
+      <div id="dbPreview" style="font-family:var(--mono);font-size:12px;color:var(--muted);line-height:1.8;min-height:100px">
+        资料库为空
+      </div>
+    </div>
+  </div>
+
+  <!-- Action bar -->
+  <div class="action-bar">
+    <button class="btn btn-match" onclick="runMatch()">▶ 开始匹配</button>
+    <button class="btn btn-export" id="btnExport" onclick="exportExcel()" disabled>⬇ 导出 Excel</button>
+    <button class="btn btn-sm" onclick="clearPanelA()">✕ 清空 A 组</button>
+    <div class="stat-row" id="statRow" style="display:none">
+      <span class="s-total">B库 <em id="sTotal">0</em> 条</span>
+      <span class="s-match">匹配 <em id="sMatch">0</em></span>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div class="results-wrap" id="resultsWrap">
+    <div class="section-title">匹配结果</div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>日期</th><th>单据号</th><th>B 组单据行</th>
+            <th>投注类型</th><th style="text-align:right">金额 (MYR)</th>
+          </tr>
+        </thead>
+        <tbody id="resultBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /wrap -->
+
+<!-- ══════════════════════════════════════════════════
+     MODALS
+══════════════════════════════════════════════════ -->
+
+<!-- Confirm dialog -->
+<div class="overlay" id="overlay">
+  <div class="dialog">
+    <div class="dialog-title" id="dialogTitle">确认操作</div>
+    <div class="dialog-msg" id="dialogMsg"></div>
+    <div class="dialog-btns">
+      <button onclick="closeDialog()">取消</button>
+      <button class="confirm-del" id="dialogConfirm">确认</button>
+    </div>
+  </div>
+</div>
+
+<!-- Manage customer modal -->
+<div class="overlay" id="manageOverlay">
+  <div class="manage-modal">
+    <div class="manage-header">
+      <span class="manage-title" id="manageTitle">管理顾客</span>
+      <span id="manageCount" style="font-family:var(--mono);font-size:11px;color:var(--muted)"></span>
+      <button class="hbtn" onclick="closeManage()">✕ 关闭</button>
+    </div>
+    <div class="manage-body">
+      <div id="manageTableWrap"></div>
+    </div>
+    <div class="manage-footer">
+      <div class="manage-add-col">
+        <textarea class="manage-add-ta" id="manageAddInput" placeholder="粘贴单据资料到此处，按「添加」追加到此顾客…"></textarea>
+        <div class="manage-add-btns">
+          <button class="hbtn green" onclick="manageAdd()" style="border-color:var(--accent);color:var(--accent)">＋ 添加</button>
+          <button class="hbtn" onclick="document.getElementById('manageAddInput').value=''">✕ 清空输入</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Customer selector (quick-add) -->
+<div class="overlay" id="custSelOverlay">
+  <div class="cust-sel-modal">
+    <div class="cust-sel-header">
+      <div class="cust-sel-title">选择顾客</div>
+      <input class="cust-sel-search" id="custSelSearch" type="text" placeholder="搜索顾客名字…" oninput="renderCustSelList()">
+    </div>
+    <div class="cust-sel-body" id="custSelList"></div>
+    <div class="cust-sel-footer">
+      <button class="hbtn" onclick="closeCustSel()">取消</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════════════════
+// A 组 STORAGE
+// ════════════════════════════════════════════════════════
+const A_CUSTOMERS_KEY = 'adb_customers';
+const A_DATA_PFX = 'adb_data_';
+
+function getCustomers() {
+  try { return JSON.parse(localStorage.getItem(A_CUSTOMERS_KEY)) || []; }
+  catch { return []; }
+}
+function saveCustomers(arr) {
+  localStorage.setItem(A_CUSTOMERS_KEY, JSON.stringify(arr));
+}
+function getCustRecs(name) {
+  try { return JSON.parse(localStorage.getItem(A_DATA_PFX + name)) || []; }
+  catch { return []; }
+}
+function saveCustRecs(name, recs) {
+  localStorage.setItem(A_DATA_PFX + name, JSON.stringify(recs));
+}
+function deleteCustData(name) {
+  const custs = getCustomers().filter(c => c !== name);
+  saveCustomers(custs);
+  localStorage.removeItem(A_DATA_PFX + name);
+}
+
+// ════════════════════════════════════════════════════════
+// A 组 UI
+// ════════════════════════════════════════════════════════
+function refreshAUI() {
+  const custs = getCustomers();
+  const list = document.getElementById('custList');
+  let total = 0;
+
+  if (!custs.length) {
+    list.innerHTML = '<span class="no-data">（尚无顾客，请在下方新建）</span>';
+    document.getElementById('adbTotal').textContent = '0';
+    document.getElementById('adbCount').textContent = '0';
+    return;
+  }
+
+  list.innerHTML = '';
+  for (const name of custs) {
+    const recs = getCustRecs(name);
+    total += recs.length;
+
+    const tag = document.createElement('span');
+    tag.className = 'cust-tag';
+
+    const nameNode = document.createTextNode(name + ' ');
+    tag.appendChild(nameNode);
+
+    const cnt = document.createElement('span');
+    cnt.className = 'tag-count';
+    cnt.textContent = recs.length + '条';
+    tag.appendChild(cnt);
+
+    const mgBtn = document.createElement('button');
+    mgBtn.className = 'tag-btn';
+    mgBtn.title = '管理此顾客资料';
+    mgBtn.textContent = '管理';
+    mgBtn.onclick = () => openManage(name);
+    tag.appendChild(mgBtn);
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'tag-btn tag-del';
+    delBtn.title = '删除此顾客';
+    delBtn.textContent = '×';
+    delBtn.onclick = () => confirmDeleteCust(name);
+    tag.appendChild(delBtn);
+
+    list.appendChild(tag);
+  }
+
+  document.getElementById('adbTotal').textContent = total;
+  document.getElementById('adbCount').textContent = custs.length;
+}
+
+function addCustomer() {
+  const inp = document.getElementById('newCustName');
+  const name = inp.value.trim();
+  if (!name) { showToast('请输入顾客名字'); return; }
+  const custs = getCustomers();
+  if (custs.includes(name)) { showToast(`「${name}」已存在`); return; }
+  custs.push(name);
+  saveCustomers(custs);
+  saveCustRecs(name, []);
+  inp.value = '';
+  refreshAUI();
+  renderCustDrop();
+  showToast(`已新建顾客「${name}」`);
+}
+
+// ════════════════════════════════════════════════════════
+// B 组 STORAGE
+// ════════════════════════════════════════════════════════
+const B_PFX = 'bdb_';
+
+function getAllMonthKeys() {
+  const keys = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith(B_PFX)) keys.push(k);
+  }
+  return keys.sort();
+}
+function getMonthData(mk) {
+  try { return JSON.parse(localStorage.getItem(mk)) || []; }
+  catch { return []; }
+}
+function saveMonthData(mk, recs) { localStorage.setItem(mk, JSON.stringify(recs)); }
+function deleteMonthData(mk) { localStorage.removeItem(mk); }
+function getAllBRecs() {
+  const all = [];
+  for (const k of getAllMonthKeys()) all.push(...getMonthData(k));
+  return all;
+}
+function monthKeyFromDate(dateStr) {
+  if (!dateStr) return null;
+  const m = dateStr.match(/^(\d{4}-\d{2})/);
+  return m ? B_PFX + m[1] : null;
+}
+function monthLabel(mk) {
+  const s = mk.replace(B_PFX, '');
+  const [y, mo] = s.split('-');
+  return `${y}年${parseInt(mo)}月`;
+}
+
+// ════════════════════════════════════════════════════════
+// B 组 UI
+// ════════════════════════════════════════════════════════
+function refreshBUI() {
+  const keys = getAllMonthKeys();
+  const list = document.getElementById('monthList');
+  const preview = document.getElementById('dbPreview');
+  let total = 0;
+
+  if (!keys.length) {
+    list.innerHTML = '<span class="no-data">（资料库是空的，请在下方添加）</span>';
+    preview.textContent = '资料库为空';
+    document.getElementById('dbTotal').textContent = '0';
+    document.getElementById('dbMonths').textContent = '0';
+    return;
+  }
+
+  list.innerHTML = '';
+  const lines = [];
+  for (const k of keys) {
+    const recs = getMonthData(k);
+    total += recs.length;
+
+    const tag = document.createElement('span');
+    tag.className = 'month-tag';
+    const em = document.createElement('em');
+    em.textContent = `${recs.length}条`;
+    tag.appendChild(document.createTextNode(monthLabel(k) + ' '));
+    tag.appendChild(em);
+    const delBtn = document.createElement('button');
+    delBtn.className = 'del-month';
+    delBtn.title = '删除此月份';
+    delBtn.textContent = '×';
+    delBtn.onclick = () => confirmDeleteMonth(k);
+    tag.appendChild(delBtn);
+    list.appendChild(tag);
+
+    lines.push(`▸ ${monthLabel(k)}：${recs.length} 条记录`);
+  }
+
+  preview.innerHTML = lines.map(l => `<div style="color:var(--text)">${esc(l)}</div>`).join('');
+  document.getElementById('dbTotal').textContent = total;
+  document.getElementById('dbMonths').textContent = keys.length;
+}
+
+// ════════════════════════════════════════════════════════
+// ADD TO B DATABASE
+// ════════════════════════════════════════════════════════
+function addToDatabase() {
+  const text = document.getElementById('inputBAdd').value.trim();
+  if (!text) { showToast('请先输入或载入 B 组资料'); return; }
+
+  const records = parseB(text);
+  if (!records.length) { showToast('未识别到任何单据记录，请检查格式'); return; }
+
+  const groups = {};
+  let noDate = 0;
+  for (const rec of records) {
+    const mk = monthKeyFromDate(rec.dateB);
+    if (!mk) { noDate++; continue; }
+    if (!groups[mk]) groups[mk] = [];
+    groups[mk].push(rec);
+  }
+
+  let added = 0, skipped = 0;
+  for (const [mk, recs] of Object.entries(groups)) {
+    const existing = getMonthData(mk);
+    const exSet = new Set(existing.map(r => r.docNo + '|' + r.line + '|' + r.betType));
+    const newOnes = recs.filter(r => !exSet.has(r.docNo + '|' + r.line + '|' + r.betType));
+    skipped += recs.length - newOnes.length;
+    added += newOnes.length;
+    if (newOnes.length) saveMonthData(mk, [...existing, ...newOnes]);
+  }
+
+  document.getElementById('inputBAdd').value = '';
+  document.getElementById('fileBAdd').value = '';
+  refreshBUI();
+
+  let msg = `已添加 ${added} 条`;
+  if (skipped) msg += `，已重复 ${skipped} 条跳过`;
+  if (noDate) msg += `，${noDate} 条无法识别日期`;
+  showToast(msg);
+}
+
+// ════════════════════════════════════════════════════════
+// DELETE CONFIRMS
+// ════════════════════════════════════════════════════════
+let pendingAction = null;
+
+function showConfirm(title, msg, onConfirm) {
+  document.getElementById('dialogTitle').textContent = title;
+  document.getElementById('dialogMsg').textContent = msg;
+  pendingAction = onConfirm;
+  document.getElementById('dialogConfirm').onclick = () => { if (pendingAction) pendingAction(); };
+  document.getElementById('overlay').classList.add('show');
+}
+function closeDialog() {
+  document.getElementById('overlay').classList.remove('show');
+  pendingAction = null;
+}
+document.getElementById('overlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeDialog(); });
+
+function confirmDeleteMonth(mk) {
+  const n = getMonthData(mk).length;
+  showConfirm(
+    `删除 ${monthLabel(mk)}`,
+    `确定要删除「${monthLabel(mk)}」的全部 ${n} 条记录吗？\n此操作无法复原。`,
+    () => { deleteMonthData(mk); closeDialog(); refreshBUI(); showToast(`已删除 ${monthLabel(mk)}`); }
+  );
+}
+
+function confirmDeleteCust(name) {
+  const n = getCustRecs(name).length;
+  showConfirm(
+    `删除顾客「${name}」`,
+    `确定要删除顾客「${name}」及其全部 ${n} 条记录吗？\n此操作无法复原。`,
+    () => {
+      deleteCustData(name);
+      closeDialog();
+      refreshAUI();
+      renderCustDrop();
+      showToast(`已删除顾客「${name}」`);
+    }
+  );
+}
+
+function confirmClearAll() {
+  const custs = getCustomers();
+  if (!custs.length) { showToast('A 组资料库是空的'); return; }
+  const total = custs.reduce((s, n) => s + getCustRecs(n).length, 0);
+  showConfirm(
+    '清空所有顾客资料',
+    `确定要清空所有 ${custs.length} 位顾客的全部 ${total} 条资料吗？\n顾客名字保留，只清空资料内容。\n此操作无法复原。`,
+    () => {
+      for (const name of custs) saveCustRecs(name, []);
+      closeDialog();
+      refreshAUI();
+      clearPanelA();
+      showToast('已清空所有顾客资料（顾客名字保留）');
+    }
+  );
+}
+
+// ════════════════════════════════════════════════════════
+// PARSERS
+// ════════════════════════════════════════════════════════
+function parseA(text) {
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  const hasReceiptDate = lines.some(l => /\d{2}\.\d{2}\.\d{2}\s+\d{3,4}/.test(l));
+  const hasIsoDate = lines.some(l => /^\d{4}-\d{2}-\d{2}$/.test(l));
+  const map = new Map();
+
+  if (!hasReceiptDate && !hasIsoDate) {
+    for (const line of lines) {
+      for (const m of line.matchAll(/(?<!\d)(\d{5})(?!\d)/g)) {
+        map.set(m[1], '');
+      }
+    }
+    return { mode: 'manual', map };
+  }
+
+  let currentDate = '';
+  for (const line of lines) {
+    let m = line.match(/^(\d{4}-\d{2}-\d{2})$/);
+    if (m) { currentDate = m[1]; continue; }
+
+    m = line.match(/(\d{2})\.(\d{2})\.(\d{2})\s+\d{3,4}/);
+    if (m) { currentDate = `20${m[1]}-${m[2]}-${m[3]}`; continue; }
+
+    for (const dm of line.matchAll(/\((\d{5})\)/g)) {
+      if (!map.has(dm[1])) map.set(dm[1], currentDate || '(日期未识别)');
+    }
+
+    if (hasIsoDate) {
+      m = line.match(/^(\d{5})$/);
+      if (m && !map.has(m[1])) map.set(m[1], currentDate || '');
+    }
+  }
+  return { mode: hasIsoDate ? 'stored' : 'receipt', map };
+}
+
+function parseB(text) {
+  const records = [];
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  let currentDateB = '';
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    const dm = line.match(/^\((\d{4}-\d{2}-\d{2})\)$/);
+    if (dm) { currentDateB = dm[1]; i++; continue; }
+
+    const m = line.match(/\((\d{5})\)/);
+    if (m) {
+      const docNo = m[1];
+      let betType = '';
+      if (i + 1 < lines.length) {
+        const next = lines[i + 1];
+        if (!/\(\d{5}\)/.test(next) && !/^\d+\.\d{2}$/.test(next.replace(/,/g, ''))) {
+          betType = next; i++;
+        }
+      }
+      let amount = '';
+      if (i + 1 < lines.length) {
+        const next = lines[i + 1];
+        if (/^\d+\.\d{2}$/.test(next.replace(/,/g, ''))) {
+          amount = next.replace(/,/g, ''); i++;
+        }
+      }
+      records.push({ docNo, line, betType, amount, dateB: currentDateB });
+    }
+    i++;
+  }
+  return records;
+}
+
+// ════════════════════════════════════════════════════════
+// CUSTOMER RECORD HELPERS
+// ════════════════════════════════════════════════════════
+
+// Add parsed records from text to a customer; returns {added, dupes}
+function addRecsToCust(name, text) {
+  const { map } = parseA(text);
+  if (!map.size) return { added: 0, dupes: 0 };
+
+  const existing = getCustRecs(name);
+  const exSet = new Set(existing.map(r => r.docNo));
+  let added = 0, dupes = 0;
+  const newOnes = [];
+
+  for (const [docNo, date] of map.entries()) {
+    if (exSet.has(docNo)) { dupes++; continue; }
+    newOnes.push({ docNo, date });
+    exSet.add(docNo);
+    added++;
+  }
+
+  if (newOnes.length) saveCustRecs(name, [...existing, ...newOnes]);
+  return { added, dupes };
+}
+
+// Convert stored records back to loadable text for the A textarea
+function custRecsToText(name) {
+  const recs = getCustRecs(name);
+  if (!recs.length) return '';
+
+  const noDate = recs.filter(r => !r.date).map(r => r.docNo);
+  const withDate = recs.filter(r => r.date);
+
+  const byDate = {};
+  for (const r of withDate) {
+    if (!byDate[r.date]) byDate[r.date] = [];
+    byDate[r.date].push(r.docNo);
+  }
+
+  // Dateless records first so they don't inherit a preceding ISO date line
+  const lines = [...noDate];
+  for (const [date, docNos] of Object.entries(byDate).sort()) {
+    lines.push(date, ...docNos);
+  }
+  return lines.join('\n');
+}
+
+function dupeMsg(added, dupes, prefix = '') {
+  if (dupes > 0 && added === 0) return { text: `已重复：全部 ${dupes} 条单据已存在，未添加`, type: 'warn' };
+  if (dupes > 0) return { text: `${prefix}已添加 ${added} 条，已重复 ${dupes} 条跳过`, type: '' };
+  return { text: `${prefix}已添加 ${added} 条`, type: '' };
+}
+
+// ════════════════════════════════════════════════════════
+// CUSTOMER DROPDOWN (A panel)
+// ════════════════════════════════════════════════════════
+function toggleCustDrop() {
+  const panel = document.getElementById('custDropPanel');
+  if (panel.classList.contains('show')) {
+    panel.classList.remove('show');
+  } else {
+    renderCustDrop();
+    panel.classList.add('show');
+    setTimeout(() => document.getElementById('dropSearchInput').focus(), 50);
+  }
+}
+
+function renderCustDrop() {
+  const q = document.getElementById('dropSearchInput').value.trim().toLowerCase();
+  const custs = getCustomers().filter(c => !q || c.toLowerCase().includes(q));
+  const list = document.getElementById('dropList');
+  list.innerHTML = '';
+
+  if (!custs.length) {
+    const el = document.createElement('div');
+    el.className = 'drop-empty';
+    el.textContent = q ? '无匹配顾客' : '尚无顾客';
+    list.appendChild(el);
+    return;
+  }
+
+  for (const name of custs) {
+    const recs = getCustRecs(name);
+    const div = document.createElement('div');
+    div.className = 'drop-item';
+    div.appendChild(document.createTextNode(name));
+    const cnt = document.createElement('span');
+    cnt.className = 'di-count';
+    cnt.textContent = `${recs.length}条`;
+    div.appendChild(cnt);
+    div.onclick = () => loadCustToA(name);
+    list.appendChild(div);
+  }
+}
+
+function loadCustToA(name) {
+  const text = custRecsToText(name);
+  document.getElementById('inputA').value = text;
+  document.getElementById('loadedCustLabel').textContent = `▸ ${name}`;
+  document.getElementById('custDropPanel').classList.remove('show');
+  document.getElementById('dropSearchInput').value = '';
+  updateCounterA();
+  showToast(`已载入「${name}」的 ${getCustRecs(name).length} 条记录`);
+}
+
+document.addEventListener('click', e => {
+  const wrap = document.getElementById('custDropWrap');
+  if (!wrap.contains(e.target)) document.getElementById('custDropPanel').classList.remove('show');
+});
+
+// ════════════════════════════════════════════════════════
+// MANAGE MODAL
+// ════════════════════════════════════════════════════════
+let activeCust = null;
+
+function openManage(name) {
+  activeCust = name;
+  document.getElementById('manageTitle').textContent = `管理顾客「${name}」`;
+  renderManageTable();
+  document.getElementById('manageOverlay').classList.add('show');
+}
+
+function closeManage() {
+  document.getElementById('manageOverlay').classList.remove('show');
+  document.getElementById('manageAddInput').value = '';
+  activeCust = null;
+}
+
+document.getElementById('manageOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeManage(); });
+
+function renderManageTable() {
+  const recs = getCustRecs(activeCust);
+  const wrap = document.getElementById('manageTableWrap');
+  document.getElementById('manageCount').textContent = `共 ${recs.length} 条`;
+
+  if (!recs.length) {
+    wrap.innerHTML = '<div style="font-family:var(--mono);font-size:12px;color:var(--muted);padding:12px 0">此顾客暂无资料</div>';
+    return;
+  }
+
+  const table = document.createElement('table');
+  table.className = 'manage-table';
+  table.innerHTML = `<thead><tr>
+    <th>#</th><th>单据号码</th><th>日期</th><th></th>
+  </tr></thead>`;
+  const tbody = document.createElement('tbody');
+  recs.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    const tdIdx = document.createElement('td');
+    tdIdx.style.color = 'var(--muted)';
+    tdIdx.textContent = i + 1;
+    const tdDoc = document.createElement('td');
+    tdDoc.style.cssText = 'color:var(--accent);font-weight:600';
+    tdDoc.textContent = r.docNo;
+    const tdDate = document.createElement('td');
+    tdDate.style.color = 'var(--muted)';
+    tdDate.textContent = r.date || '—';
+    const tdDel = document.createElement('td');
+    const btn = document.createElement('button');
+    btn.className = 'del-rec';
+    btn.title = '删除此条';
+    btn.textContent = '×';
+    btn.onclick = () => deleteManageRec(i);
+    tdDel.appendChild(btn);
+    tr.append(tdIdx, tdDoc, tdDate, tdDel);
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  wrap.innerHTML = '';
+  wrap.appendChild(table);
+}
+
+function deleteManageRec(idx) {
+  const recs = getCustRecs(activeCust);
+  recs.splice(idx, 1);
+  saveCustRecs(activeCust, recs);
+  renderManageTable();
+  refreshAUI();
+  showToast('已删除该条记录');
+}
+
+function manageAdd() {
+  const text = document.getElementById('manageAddInput').value.trim();
+  if (!text) { showToast('请先输入资料'); return; }
+  const { added, dupes } = addRecsToCust(activeCust, text);
+  if (!added && !dupes) { showToast('未识别到任何单据号码'); return; }
+  document.getElementById('manageAddInput').value = '';
+  renderManageTable();
+  refreshAUI();
+  renderCustDrop();
+  const { text: msg, type } = dupeMsg(added, dupes);
+  showToast(msg, type);
+}
+
+// ════════════════════════════════════════════════════════
+// QUICK PASTE + ADD (header)
+// ════════════════════════════════════════════════════════
+let pastedText = '';
+
+async function quickPaste() {
+  try {
+    const text = await navigator.clipboard.readText();
+    if (!text.trim()) { showToast('剪贴板是空的'); return; }
+    pastedText = text;
+    document.getElementById('pastePreviewText').textContent = text.slice(0, 180) + (text.length > 180 ? '…' : '');
+    document.getElementById('pastePreview').classList.add('show');
+    showToast('已读取剪贴板，按「添加」选择顾客');
+  } catch {
+    showToast('无法读取剪贴板，请先在浏览器允许权限', 'warn');
+  }
+}
+
+function quickAdd() {
+  if (!pastedText.trim()) { showToast('请先按「粘贴」读取剪贴板内容'); return; }
+  const custs = getCustomers();
+  if (!custs.length) { showToast('请先新建顾客'); return; }
+  document.getElementById('custSelSearch').value = '';
+  renderCustSelList();
+  document.getElementById('custSelOverlay').classList.add('show');
+  setTimeout(() => document.getElementById('custSelSearch').focus(), 50);
+}
+
+function renderCustSelList() {
+  const q = document.getElementById('custSelSearch').value.trim().toLowerCase();
+  const custs = getCustomers().filter(c => !q || c.toLowerCase().includes(q));
+  const list = document.getElementById('custSelList');
+  list.innerHTML = '';
+
+  if (!custs.length) {
+    const div = document.createElement('div');
+    div.style.cssText = 'padding:14px 18px;font-family:var(--mono);font-size:11px;color:var(--muted);font-style:italic';
+    div.textContent = '无匹配顾客';
+    list.appendChild(div);
+    return;
+  }
+
+  for (const name of custs) {
+    const recs = getCustRecs(name);
+    const div = document.createElement('div');
+    div.className = 'cust-sel-item';
+    div.appendChild(document.createTextNode(name));
+    const cnt = document.createElement('span');
+    cnt.className = 'si-count';
+    cnt.textContent = `${recs.length}条`;
+    div.appendChild(cnt);
+    div.onclick = () => addPastedToCust(name);
+    list.appendChild(div);
+  }
+}
+
+function addPastedToCust(name) {
+  const { added, dupes } = addRecsToCust(name, pastedText);
+  if (!added && !dupes) {
+    showToast('未识别到任何单据号码', 'warn');
+    closeCustSel();
+    return;
+  }
+  closeCustSel();
+  document.getElementById('pastePreview').classList.remove('show');
+  pastedText = '';
+  refreshAUI();
+  renderCustDrop();
+  const { text: msg, type } = dupeMsg(added, dupes, `已添加到「${name}」：`);
+  showToast(msg, type);
+}
+
+function closeCustSel() {
+  document.getElementById('custSelOverlay').classList.remove('show');
+  document.getElementById('custSelSearch').value = '';
+}
+document.getElementById('custSelOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeCustSel(); });
+
+// ════════════════════════════════════════════════════════
+// MATCH
+// ════════════════════════════════════════════════════════
+let matchedRows = [];
+
+function runMatch() {
+  const textA = document.getElementById('inputA').value.trim();
+  if (!textA) { showToast('请先输入 A 组单据或号码'); return; }
+  const allB = getAllBRecs();
+  if (!allB.length) { showToast('B 组资料库是空的，请先添加资料'); return; }
+
+  const { map: aMap } = parseA(textA);
+  matchedRows = [];
+
+  for (const rec of allB) {
+    if (aMap.has(rec.docNo)) {
+      const dA = aMap.get(rec.docNo);
+      matchedRows.push({ dateA: dA || rec.dateB || '(日期未识别)', ...rec });
+    }
+  }
+
+  renderTable(matchedRows);
+  document.getElementById('sTotal').textContent = allB.length;
+  document.getElementById('sMatch').textContent = matchedRows.length;
+  document.getElementById('statRow').style.display = 'flex';
+  document.getElementById('btnExport').disabled = matchedRows.length === 0;
+  document.getElementById('resultsWrap').classList.add('show');
+  showToast(matchedRows.length ? `匹配到 ${matchedRows.length} 条记录` : '没有匹配结果');
+}
+
+// ════════════════════════════════════════════════════════
+// RENDER TABLE
+// ════════════════════════════════════════════════════════
+function renderTable(rows) {
+  const tbody = document.getElementById('resultBody');
+  tbody.innerHTML = '';
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--muted);font-family:var(--mono)">无匹配结果</td></tr>`;
+    return;
+  }
+  for (const r of rows) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="td-date">${esc(r.dateA)}</td>
+      <td class="td-docno">${esc(r.docNo)}</td>
+      <td>${esc(r.line)}</td>
+      <td style="color:var(--muted)">${esc(r.betType)}</td>
+      <td class="td-amt">${r.amount || '—'}</td>`;
+    tbody.appendChild(tr);
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// EXPORT
+// ════════════════════════════════════════════════════════
+function exportExcel() {
+  if (!matchedRows.length) return;
+  const wb = XLSX.utils.book_new();
+  const data = [['日期', '单据号码', 'B组单据行', '投注类型', '金额 (MYR)']];
+  for (const r of matchedRows) {
+    data.push([r.dateA, r.docNo, r.line, r.betType, r.amount ? parseFloat(r.amount) : '']);
+  }
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  ws['!cols'] = [{ wch: 14 }, { wch: 10 }, { wch: 28 }, { wch: 18 }, { wch: 12 }];
+  XLSX.utils.book_append_sheet(wb, ws, '匹配结果');
+  XLSX.writeFile(wb, `单据匹配_${new Date().toISOString().slice(0,10)}.xlsx`);
+  showToast('Excel 已导出');
+}
+
+// ════════════════════════════════════════════════════════
+// FILE LOADERS
+// ════════════════════════════════════════════════════════
+function loadFile(side) {
+  const inp = document.getElementById('file' + side);
+  const file = inp.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('input' + side).value = e.target.result;
+    if (side === 'A') { document.getElementById('loadedCustLabel').textContent = ''; updateCounterA(); }
+    showToast(`已载入：${file.name}`);
+    inp.value = '';
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function loadFileToAdd() {
+  const inp = document.getElementById('fileBAdd');
+  const file = inp.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('inputBAdd').value = e.target.result;
+    showToast(`已载入：${file.name}，请按「添加到资料库」`);
+    inp.value = '';
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+// ════════════════════════════════════════════════════════
+// MISC
+// ════════════════════════════════════════════════════════
+document.getElementById('inputA').addEventListener('input', updateCounterA);
+
+function updateCounterA() {
+  const txt = document.getElementById('inputA').value.trim();
+  const el = document.getElementById('counterA');
+  if (!txt) { el.innerHTML = '—'; return; }
+  const { mode, map } = parseA(txt);
+  const label = { manual: '手动号码', receipt: '单据', stored: '顾客存档' }[mode] || mode;
+  el.innerHTML = `识别到 <em>${map.size}</em> 个号码（${label}模式）`;
+}
+
+function clearPanelA() {
+  document.getElementById('inputA').value = '';
+  document.getElementById('counterA').innerHTML = '—';
+  document.getElementById('loadedCustLabel').textContent = '';
+}
+
+function esc(str) {
+  return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function showToast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast' + (type ? ' ' + type : '');
+  void el.offsetWidth;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+// ════════════════════════════════════════════════════════
+// DATE CHECK (B组)
+// ════════════════════════════════════════════════════════
+function toggleDateCheck() {
+  const panel = document.getElementById('dateCheckPanel');
+  if (panel.style.display !== 'none') { panel.style.display = 'none'; return; }
+
+  const allRecs = getAllBRecs();
+  if (!allRecs.length) { showToast('B 组资料库是空的'); return; }
+
+  const dateSet = new Set();
+  for (const r of allRecs) { if (r.dateB) dateSet.add(r.dateB); }
+
+  const byMonth = {};
+  for (const d of [...dateSet].sort()) {
+    const mo = d.slice(0, 7);
+    if (!byMonth[mo]) byMonth[mo] = [];
+    byMonth[mo].push(d);
+  }
+
+  let html = '';
+  for (const [mo, dates] of Object.entries(byMonth).sort()) {
+    const [yr, mn] = mo.split('-');
+    const label = `${yr}年${parseInt(mn)}月`;
+    const days = new Date(parseInt(yr), parseInt(mn), 0).getDate();
+    const missing = [];
+    for (let d = 1; d <= days; d++) {
+      const ds = `${yr}-${mn}-${String(d).padStart(2, '0')}`;
+      if (!dateSet.has(ds)) missing.push(d);
+    }
+    html += `<div style="margin-bottom:12px">
+      <div style="color:var(--blue);font-weight:600;margin-bottom:4px">${label}</div>
+      <div style="color:var(--accent)">✓ 已有：${dates.map(d => d.slice(8).replace(/^0/, '')).join('、')} 日</div>
+      ${missing.length
+        ? `<div style="color:var(--warn);margin-top:2px">⚠ 缺少：${missing.join('、')} 日</div>`
+        : `<div style="color:var(--muted);margin-top:2px">本月日期完整</div>`}
+    </div>`;
+  }
+
+  document.getElementById('dateCheckContent').innerHTML = html;
+  panel.style.display = 'block';
+}
+
+// ── Init ──
+refreshAUI();
+refreshBUI();
+</script>
+</body>
+</html>
