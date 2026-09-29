@@ -1444,11 +1444,17 @@ function handleBImport(file) {
       const data = JSON.parse(e.target.result);
       let total = 0;
       for (const [mk, recs] of Object.entries(data)) {
-        if (!mk.startsWith(B_PFX)) continue;
-        const ex = getMonthData(mk);
+        if (!Array.isArray(recs)) continue;
+        let targetKey = mk;
+        if (!mk.startsWith(B_PFX)) {
+          const m = mk.match(/_(\d{4}-\d{2})$/);
+          if (!m) continue;
+          targetKey = B_PFX + m[1];
+        }
+        const ex = getMonthData(targetKey);
         const exSet = new Set(ex.map(r => r.docNo + '|' + r.line + '|' + r.betType));
         const newOnes = recs.filter(r => !exSet.has(r.docNo + '|' + r.line + '|' + r.betType));
-        if (newOnes.length) { saveMonthData(mk, [...ex, ...newOnes]); total += newOnes.length; }
+        if (newOnes.length) { saveMonthData(targetKey, [...ex, ...newOnes]); total += newOnes.length; }
       }
       refreshBUI();
       showToast(total > 0 ? `已导入 ${total} 条 B 组记录` : '无新记录（全部已存在）');
