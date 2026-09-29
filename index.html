@@ -669,6 +669,7 @@ H-4-2626 (49186)
 33.33
 ..."></textarea>
         <div class="add-b-btns">
+          <button class="hbtn blue" onclick="pasteToDB()">⬆ 粘贴</button>
           <button class="hbtn blue" onclick="document.getElementById('fileBAdd').click()">📂 载入文件</button>
           <input type="file" id="fileBAdd" accept=".txt,text/plain" onchange="loadFileToAdd(this.files[0]);this.value=''" style="display:none">
           <button class="hbtn green" onclick="addToDatabase()">＋ 添加到资料库</button>
@@ -1407,6 +1408,17 @@ function loadFile(side) {
     inp.value = '';
   };
   reader.readAsText(file, 'UTF-8');
+}
+
+async function pasteToDB() {
+  try {
+    const text = await navigator.clipboard.readText();
+    if (!text.trim()) { showToast('剪贴板是空的'); return; }
+    document.getElementById('inputBAdd').value = text;
+    addToDatabase();
+  } catch {
+    showToast('无法读取剪贴板，请允许浏览器权限', 'warn');
+  }
 }
 
 function loadFileToAdd(file) {
