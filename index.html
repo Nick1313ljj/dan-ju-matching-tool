@@ -317,6 +317,26 @@ textarea.main-ta:focus { border-color: var(--accent); }
 
 .no-data { font-family: var(--mono); font-size: 12px; color: var(--muted); font-style: italic; }
 
+/* B 组来源 tabs */
+.source-tabs {
+  display: flex; gap: 6px; flex-wrap: wrap;
+  padding: 6px 0 10px; border-bottom: 1px solid var(--border); margin-bottom: 10px;
+}
+.src-tab {
+  padding: 4px 14px; border: 1.5px solid var(--blue);
+  background: transparent; color: var(--blue); border-radius: 20px;
+  font-size: 13px; cursor: pointer; font-family: var(--mono);
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.src-tab em { font-style: normal; font-size: 10px; background: var(--blue); color: #fff; border-radius: 10px; padding: 0 5px; }
+.src-tab.active { background: var(--blue); color: #fff; }
+.src-tab.active em { background: #fff; color: var(--blue); }
+.src-tab-add {
+  padding: 4px 10px; border: 1.5px dashed var(--muted);
+  background: transparent; color: var(--muted); border-radius: 20px;
+  font-size: 13px; cursor: pointer;
+}
+
 /* New customer row */
 .new-cust-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
 .new-cust-row input[type=text] {
@@ -558,7 +578,6 @@ td { padding: 8px 14px; vertical-align: middle; color: var(--text); white-space:
   <div class="panel-a">
     <div class="panel-header">
       <span class="panel-label">A 组 — 单据来源</span>
-      <button class="hbtn blue" onclick="quickPaste()">⬆ 粘贴</button>
       <button class="hbtn green" onclick="quickAdd()">＋ 添加</button>
       <div class="cust-drop-wrap" id="custDropWrap">
         <button class="hbtn green" onclick="toggleCustDrop()">顾客 ▾</button>
@@ -643,6 +662,7 @@ td { padding: 8px 14px; vertical-align: middle; color: var(--text); white-space:
       <span class="collapse-arrow">▶</span>
     </div>
     <div class="collapse-body" id="bBody">
+      <div class="source-tabs" id="sourceTabsB" onclick="event.stopPropagation()"></div>
       <div class="tag-list" id="monthList">
         <span class="no-data">（资料库是空的）</span>
       </div>
@@ -873,15 +893,63 @@ function addCustomer() {
 }
 
 // ════════════════════════════════════════
-// B 组 STORAGE
+// B 组 STORAGE (multi-source)
 // ════════════════════════════════════════
 const B_PFX = 'bdb_';
+const B_SOURCES_KEY = 'bdb__sources';
+const DEFAULT_SOURCES = ['aliapos', 'alibaba'];
+let currentBSource = null;
 
+function getBSources() {
+  try { return JSON.parse(localStorage.getItem(B_SOURCES_KEY)) || [...DEFAULT_SOURCES]; }
+  catch { return [...DEFAULT_SOURCES]; }
+}
+function saveBSources(sources) { localStorage.setItem(B_SOURCES_KEY, JSON.stringify(sources)); }
+
+function initBSources() {
+  const sources = getBSources();
+  if (!localStorage.getItem(B_SOURCES_KEY)) saveBSources(sources);
+  currentBSource = sources[0];
+  // Migrate legacy bdb_YYYY-MM keys (no source) → first source
+  const legacyKeys = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && /^bdb_\d{4}-\d{2}$/.test(k)) legacyKeys.push(k);
+  }
+  let migratedCount = 0;
+  for (const k of legacyKeys) {
+    const m = k.match(/^bdb_(\d{4}-\d{2})$/);
+    if (!m) continue;
+    const newKey = `${B_PFX}${currentBSource}_${m[1]}`;
+    const recs = getMonthData(k);
+    if (recs.length) {
+      const ex = getMonthData(newKey);
+      const exSet = new Set(ex.map(r => r.docNo + '|' + r.line + '|' + r.betType));
+      const newOnes = recs.filter(r => !exSet.has(r.docNo + '|' + r.line + '|' + r.betType));
+      if (newOnes.length) saveMonthData(newKey, [...ex, ...newOnes]);
+      migratedCount += recs.length;
+    }
+    localStorage.removeItem(k);
+  }
+  if (migratedCount > 0) {
+    setTimeout(() => showToast(`旧格式数据已迁移至「${currentBSource}」，请重新导入 JSON 恢复来源分类`), 600);
+  }
+}
+
+function getAllMonthKeysForSource(source) {
+  const pfx = `${B_PFX}${source}_`;
+  const keys = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith(pfx)) keys.push(k);
+  }
+  return keys.sort();
+}
 function getAllMonthKeys() {
   const keys = [];
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i);
-    if (k && k.startsWith(B_PFX)) keys.push(k);
+    if (k && k.startsWith(B_PFX) && k !== B_SOURCES_KEY) keys.push(k);
   }
   return keys.sort();
 }
@@ -891,32 +959,74 @@ function getMonthData(mk) {
 }
 function saveMonthData(mk, recs) { localStorage.setItem(mk, JSON.stringify(recs)); }
 function deleteMonthData(mk) { localStorage.removeItem(mk); }
-function getAllBRecs() {
+function getAllBRecs(source) {
   const all = [];
-  for (const k of getAllMonthKeys()) all.push(...getMonthData(k));
+  for (const k of getAllMonthKeysForSource(source || currentBSource)) all.push(...getMonthData(k));
   return all;
 }
-function monthKeyFromDate(dateStr) {
+function monthKeyFromDate(dateStr, source) {
   if (!dateStr) return null;
   const m = dateStr.match(/^(\d{4}-\d{2})/);
-  return m ? B_PFX + m[1] : null;
+  return m ? `${B_PFX}${source || currentBSource}_${m[1]}` : null;
 }
 function monthLabel(mk) {
-  const [y, mo] = mk.replace(B_PFX, '').split('-');
+  const m = mk.match(/(\d{4}-\d{2})$/);
+  if (!m) return mk;
+  const [y, mo] = m[1].split('-');
   return `${y}年${parseInt(mo)}月`;
 }
 
 // ════════════════════════════════════════
 // B 组 UI
 // ════════════════════════════════════════
+function renderSourceTabs() {
+  const container = document.getElementById('sourceTabsB');
+  if (!container) return;
+  const sources = getBSources();
+  container.innerHTML = '';
+  for (const src of sources) {
+    const cnt = getAllBRecs(src).length;
+    const btn = document.createElement('button');
+    btn.className = 'src-tab' + (src === currentBSource ? ' active' : '');
+    btn.appendChild(document.createTextNode(src + ' '));
+    if (cnt > 0) {
+      const em = document.createElement('em');
+      em.textContent = cnt;
+      btn.appendChild(em);
+    }
+    btn.onclick = e => { e.stopPropagation(); currentBSource = src; refreshBUI(); };
+    container.appendChild(btn);
+  }
+  const addBtn = document.createElement('button');
+  addBtn.className = 'src-tab-add';
+  addBtn.textContent = '＋';
+  addBtn.title = '新增来源';
+  addBtn.onclick = e => { e.stopPropagation(); promptAddBSource(); };
+  container.appendChild(addBtn);
+}
+
+function promptAddBSource() {
+  const name = prompt('新来源名称：');
+  if (!name || !name.trim()) return;
+  const n = name.trim();
+  const sources = getBSources();
+  if (sources.includes(n)) { showToast('来源已存在'); return; }
+  sources.push(n);
+  saveBSources(sources);
+  currentBSource = n;
+  refreshBUI();
+  showToast(`已新建来源「${n}」`);
+}
+
 function refreshBUI() {
-  const keys = getAllMonthKeys();
+  renderSourceTabs();
+  const keys = getAllMonthKeysForSource(currentBSource);
   const list = document.getElementById('monthList');
   const preview = document.getElementById('dbPreview');
   let total = 0;
 
   if (!keys.length) {
-    list.innerHTML = '<span class="no-data">（资料库是空的）</span>';
+    list.innerHTML = `<span class="no-data">（「${currentBSource}」暂无数据）</span>`;
     preview.textContent = '资料库为空';
     document.getElementById('dbTotal').textContent = '0';
     document.getElementById('dbMonths').textContent = '0';
@@ -962,7 +1072,7 @@ function addToDatabase() {
   const groups = {};
   let noDate = 0;
   for (const rec of records) {
-    const mk = monthKeyFromDate(rec.dateB);
+    const mk = monthKeyFromDate(rec.dateB, currentBSource);
     if (!mk) { noDate++; continue; }
     if (!groups[mk]) groups[mk] = [];
     groups[mk].push(rec);
@@ -1334,8 +1444,8 @@ let matchedRows = [];
 function runMatch() {
   const textA = document.getElementById('inputA').value.trim();
   if (!textA) { showToast('请先输入 A 组单据或号码'); return; }
-  const allB = getAllBRecs();
-  if (!allB.length) { showToast('B 组资料库是空的，请先添加资料'); return; }
+  const allB = getAllBRecs(currentBSource);
+  if (!allB.length) { showToast(`「${currentBSource}」资料库是空的，请先添加资料`); return; }
 
   const { map: aMap } = parseA(textA);
   if (!aMap.size) { showToast('A 组未识别到任何单据号码'); return; }
@@ -1457,11 +1567,24 @@ function handleBImport(file) {
       let total = 0;
       for (const [mk, recs] of Object.entries(data)) {
         if (!Array.isArray(recs)) continue;
-        let targetKey = mk;
-        if (!mk.startsWith(B_PFX)) {
-          const m = mk.match(/_(\d{4}-\d{2})$/);
-          if (!m) continue;
-          targetKey = B_PFX + m[1];
+        let targetKey;
+        if (mk.startsWith(B_PFX)) {
+          const withoutPfx = mk.slice(B_PFX.length);
+          const legacyDate = withoutPfx.match(/^(\d{4}-\d{2})$/);
+          targetKey = legacyDate
+            ? `${B_PFX}${currentBSource}_${legacyDate[1]}`  // legacy bdb_YYYY-MM → current source
+            : mk;  // already bdb_{source}_YYYY-MM
+        } else {
+          // Old system: ali_a_ → aliapos, ali_b_ → alibaba
+          const mA = mk.match(/^ali_a_(\d{4}-\d{2})$/);
+          const mB = mk.match(/^ali_b_(\d{4}-\d{2})$/);
+          if (mA) targetKey = `${B_PFX}aliapos_${mA[1]}`;
+          else if (mB) targetKey = `${B_PFX}alibaba_${mB[1]}`;
+          else {
+            const dm = mk.match(/_(\d{4}-\d{2})$/);
+            if (!dm) continue;
+            targetKey = `${B_PFX}${currentBSource}_${dm[1]}`;
+          }
         }
         const ex = getMonthData(targetKey);
         const exSet = new Set(ex.map(r => r.docNo + '|' + r.line + '|' + r.betType));
@@ -1482,8 +1605,8 @@ function toggleDateCheck() {
   const panel = document.getElementById('dateCheckPanel');
   if (panel.style.display !== 'none') { panel.style.display = 'none'; return; }
 
-  const allRecs = getAllBRecs();
-  if (!allRecs.length) { showToast('B 组资料库是空的'); return; }
+  const allRecs = getAllBRecs(currentBSource);
+  if (!allRecs.length) { showToast(`「${currentBSource}」资料库是空的`); return; }
 
   const dateSet = new Set();
   for (const r of allRecs) if (r.dateB) dateSet.add(r.dateB);
@@ -1585,6 +1708,7 @@ document.addEventListener('visibilitychange', () => {
 
 // Init
 migrateOldAData();
+initBSources();
 initSections();
 refreshAUI();
 refreshBUI();
