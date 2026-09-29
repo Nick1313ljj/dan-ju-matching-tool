@@ -1073,7 +1073,12 @@ function parseA(text) {
     if (m) { currentDate = m[1]; continue; }
 
     m = line.match(/(\d{2})\.(\d{2})\.(\d{2})\s+\d{3,4}/);
-    if (m) { currentDate = `20${m[1]}-${m[2]}-${m[3]}`; continue; }
+    if (m) {
+      currentDate = `20${m[1]}-${m[2]}-${m[3]}`;
+      for (const dm of line.matchAll(/\((\d{5})\)/g))
+        if (!map.has(dm[1])) map.set(dm[1], currentDate);
+      continue;
+    }
 
     for (const dm of line.matchAll(/\((\d{5})\)/g))
       if (!map.has(dm[1])) map.set(dm[1], currentDate || '(日期未识别)');
