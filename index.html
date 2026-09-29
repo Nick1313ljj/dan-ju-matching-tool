@@ -1075,22 +1075,13 @@ function parseA(text) {
 
     // Dot format: 26.09.01 1520  or  26.09.02 1414 (96315)
     m = line.match(/(\d{2})\.(\d{2})\.(\d{2})\s+\d{3,4}/);
-    if (m) {
-      currentDate = `20${m[1]}-${m[2]}-${m[3]}`;
-      for (const dm of line.matchAll(/\((\d{1,6})\)/g))
-        if (!map.has(dm[1])) map.set(dm[1], currentDate);
-      continue;
-    }
+    if (m) currentDate = `20${m[1]}-${m[2]}-${m[3]}`;
 
     // No-dot format: 260920 1324 (7)
     m = line.match(/^(\d{2})(\d{2})(\d{2})\s+\d{4}/);
-    if (m) {
-      currentDate = `20${m[1]}-${m[2]}-${m[3]}`;
-      for (const dm of line.matchAll(/\((\d{1,6})\)/g))
-        if (!map.has(dm[1])) map.set(dm[1], currentDate);
-      continue;
-    }
+    if (m) currentDate = `20${m[1]}-${m[2]}-${m[3]}`;
 
+    // Scan every line for doc numbers — mirrors old system (no continue above)
     for (const dm of line.matchAll(/\((\d{1,6})\)/g))
       if (!map.has(dm[1])) map.set(dm[1], currentDate || '(日期未识别)');
 
