@@ -9,20 +9,20 @@
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
 
 :root {
-  --bg: #0d0f12;
-  --surface: #141619;
-  --surface2: #1c1f24;
-  --border: #272b33;
-  --accent: #00d4a0;
-  --accent-dim: rgba(0,212,160,0.12);
-  --blue: #3d9eff;
-  --blue-dim: rgba(61,158,255,0.12);
-  --warn: #ff6b35;
-  --warn-dim: rgba(255,107,53,0.1);
-  --red: #e03333;
-  --red-dim: rgba(224,51,51,0.13);
-  --text: #dde1e9;
-  --muted: #5a6170;
+  --bg: #ffffff;
+  --surface: #f5f6f8;
+  --surface2: #eceef2;
+  --border: #d4d8e2;
+  --accent: #00926b;
+  --accent-dim: rgba(0,146,107,0.10);
+  --blue: #1d6fc4;
+  --blue-dim: rgba(29,111,196,0.10);
+  --warn: #d95a1a;
+  --warn-dim: rgba(217,90,26,0.08);
+  --red: #c42b2b;
+  --red-dim: rgba(196,43,43,0.08);
+  --text: #1a1d24;
+  --muted: #8a90a0;
   --mono: 'IBM Plex Mono', monospace;
   --sans: 'IBM Plex Sans', sans-serif;
 }
@@ -34,253 +34,317 @@ body {
   color: var(--text);
   font-family: var(--sans);
   min-height: 100vh;
-  padding: 28px 16px 80px;
+  padding: 20px 14px 80px;
 }
 
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-  background-size: 48px 48px;
-  pointer-events: none;
-  z-index: 0;
-}
+.wrap { max-width: 1100px; margin: 0 auto; }
 
-.wrap { max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
-
-/* ── Header ── */
+/* Header */
 .header {
-  margin-bottom: 28px;
+  margin-bottom: 20px;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--border);
 }
 
-.header-left { flex: 1; min-width: 260px; }
-
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--accent);
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  border: 1px solid rgba(0,212,160,0.35);
-  padding: 4px 12px;
-  margin-bottom: 12px;
-  background: var(--accent-dim);
-}
-.badge::before { content: '◆'; font-size: 8px; }
+.header-left { flex: 1; min-width: 200px; }
 
 h1 {
   font-family: var(--mono);
-  font-size: clamp(20px, 3.5vw, 32px);
+  font-size: clamp(18px, 3vw, 26px);
   font-weight: 600;
   letter-spacing: -0.02em;
-  line-height: 1.1;
+  color: var(--text);
 }
 h1 em { font-style: normal; color: var(--accent); }
 
 .desc {
-  margin-top: 8px;
+  margin-top: 5px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 11px;
   font-family: var(--mono);
-  line-height: 1.6;
 }
 
-/* ── Header right actions ── */
-.header-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
-  padding-top: 6px;
-}
-
+/* Quick bar */
 .quick-bar {
   display: flex;
   gap: 8px;
   align-items: center;
   flex-wrap: wrap;
-  justify-content: flex-end;
+  padding-top: 4px;
 }
 
 .qbtn {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.08em;
-  padding: 8px 16px;
+  padding: 9px 18px;
   cursor: pointer;
-  border: 1px solid var(--border);
-  background: transparent;
+  border: 1.5px solid var(--border);
+  background: var(--bg);
   color: var(--text);
   transition: all 0.15s;
   white-space: nowrap;
-  text-transform: uppercase;
 }
-.qbtn:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-dim); }
-
-.qbtn-paste { border-color: rgba(61,158,255,0.5); color: var(--blue); }
+.qbtn-paste { border-color: var(--blue); color: var(--blue); }
 .qbtn-paste:hover { background: var(--blue-dim); }
-
 .qbtn-add { border-color: var(--accent); color: var(--accent); }
 .qbtn-add:hover { background: var(--accent-dim); }
-
-.qbtn-clear { border-color: var(--red); color: var(--red); background: var(--red-dim); }
-.qbtn-clear:hover { opacity: 0.8; }
+.qbtn-clear { border-color: var(--red); color: var(--red); }
+.qbtn-clear:hover { background: var(--red-dim); }
 
 .paste-preview {
   display: none;
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-top: 2px solid var(--blue);
+  border: 1px solid var(--blue);
   padding: 8px 12px;
   font-family: var(--mono);
   font-size: 11px;
   color: var(--muted);
-  max-height: 70px;
+  max-height: 60px;
   overflow-y: auto;
-  max-width: 380px;
-  text-align: left;
+  max-width: 340px;
   white-space: pre-wrap;
   word-break: break-all;
   line-height: 1.5;
+  margin-top: 6px;
 }
 .paste-preview.show { display: block; }
-.paste-label {
-  font-size: 10px;
-  color: var(--blue);
+
+/* A panel */
+.panel-a {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-top: 3px solid var(--accent);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.panel-label {
+  font-family: var(--mono);
+  font-size: 11px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  display: block;
-  margin-bottom: 3px;
+  font-weight: 600;
+  color: var(--accent);
 }
 
-/* ── DB sections ── */
-.db-section {
-  background: var(--surface);
+.cust-loaded-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--accent);
+  margin-left: auto;
+}
+
+/* Customer dropdown */
+.cust-drop-wrap { position: relative; display: inline-block; }
+.cust-drop-panel {
+  display: none; position: absolute; top: calc(100% + 4px); left: 0;
+  background: var(--bg); border: 1.5px solid var(--accent);
+  z-index: 50; min-width: 220px; max-height: 260px;
+  overflow-y: auto; box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+}
+.cust-drop-panel.show { display: block; }
+.drop-search-row { padding: 8px 10px; border-bottom: 1px solid var(--border); }
+.drop-search-row input {
+  width: 100%; background: var(--surface); border: 1px solid var(--border);
+  color: var(--text); font-family: var(--mono); font-size: 11px;
+  padding: 5px 8px; outline: none;
+}
+.drop-search-row input:focus { border-color: var(--accent); }
+.drop-search-row input::placeholder { color: var(--muted); }
+.drop-item {
+  padding: 9px 12px; font-family: var(--mono); font-size: 12px;
+  color: var(--text); cursor: pointer; display: flex;
+  justify-content: space-between; align-items: center;
+  border-bottom: 1px solid var(--border); transition: background 0.1s;
+}
+.drop-item:hover { background: var(--accent-dim); color: var(--accent); }
+.drop-item .di-count { font-size: 10px; color: var(--muted); }
+.drop-empty {
+  padding: 12px; font-family: var(--mono); font-size: 11px;
+  color: var(--muted); font-style: italic;
+}
+
+textarea.main-ta {
+  width: 100%; background: var(--bg); border: 1.5px solid var(--border);
+  color: var(--text); font-family: var(--mono); font-size: 12px;
+  line-height: 1.65; padding: 12px; resize: vertical; outline: none;
+  min-height: 180px; transition: border-color 0.2s;
+}
+textarea.main-ta::placeholder { color: var(--muted); }
+textarea.main-ta:focus { border-color: var(--accent); }
+
+.counter {
+  margin-top: 6px; font-family: var(--mono); font-size: 11px;
+  color: var(--muted); text-align: right;
+}
+.counter em { color: var(--accent); font-style: normal; }
+
+/* Action bar */
+.action-bar {
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 11px 24px; font-family: var(--mono); font-size: 13px;
+  font-weight: 600; letter-spacing: 0.06em;
+  cursor: pointer; border: none; transition: opacity 0.15s;
+  white-space: nowrap;
+}
+.btn:active { opacity: 0.8; }
+.btn-match { background: var(--accent); color: #fff; }
+.btn-match:hover { opacity: 0.88; }
+.btn-export { background: transparent; color: var(--blue); border: 1.5px solid var(--blue); }
+.btn-export:hover { background: var(--blue-dim); }
+.btn-export:disabled { opacity: 0.35; cursor: not-allowed; }
+.btn-sm {
+  background: transparent; color: var(--muted);
+  border: 1px solid var(--border); font-size: 11px; padding: 11px 14px;
+}
+.btn-sm:hover { color: var(--red); border-color: var(--red); }
+
+.stat-row {
+  margin-left: auto; display: flex; gap: 14px;
+  font-family: var(--mono); font-size: 11px; color: var(--muted);
+}
+.stat-row span em { font-style: normal; font-weight: 600; }
+.stat-row .s-match em { color: var(--accent); }
+
+/* Collapsible sections */
+.collapse-section {
   border: 1px solid var(--border);
-  padding: 18px 20px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
+  background: var(--surface);
 }
 
-.db-header {
+.collapse-header {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 14px;
-  flex-wrap: wrap;
+  padding: 12px 16px;
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 1px solid transparent;
+  transition: background 0.15s;
 }
+.collapse-header:hover { background: var(--surface2); }
+.collapse-header.open { border-bottom-color: var(--border); }
 
-.db-title {
+.collapse-title {
   font-family: var(--mono);
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
+  flex: 1;
 }
-.db-title-a { color: var(--accent); }
-.db-title-b { color: var(--blue); }
+.collapse-title-a { color: var(--accent); }
+.collapse-title-b { color: var(--blue); }
 
-.db-total {
+.collapse-meta {
   font-family: var(--mono);
   font-size: 11px;
   color: var(--muted);
 }
-.db-total em { font-style: normal; font-weight: 600; }
-.db-total-a em { color: var(--accent); }
-.db-total-b em { color: var(--blue); }
+.collapse-meta em { font-style: normal; font-weight: 600; }
+.collapse-meta-a em { color: var(--accent); }
+.collapse-meta-b em { color: var(--blue); }
 
-/* ── Tag lists ── */
+.collapse-arrow {
+  font-size: 10px; color: var(--muted);
+  transition: transform 0.2s;
+  display: inline-block;
+}
+.collapse-header.open .collapse-arrow { transform: rotate(90deg); }
+
+.collapse-body { padding: 16px; display: none; }
+.collapse-body.open { display: block; }
+
+/* Tag lists */
 .tag-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 14px;
-  min-height: 32px;
-  align-items: center;
+  display: flex; flex-wrap: wrap; gap: 8px;
+  margin-bottom: 14px; min-height: 30px; align-items: center;
 }
 
 .cust-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  padding: 4px 8px 4px 10px;
-  font-family: var(--mono);
-  font-size: 11px;
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--bg); border: 1px solid var(--border);
+  padding: 5px 8px 5px 10px; font-family: var(--mono); font-size: 11px;
   color: var(--text);
 }
 .cust-tag .tag-count { color: var(--accent); font-size: 10px; }
-
 .tag-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 10px;
-  padding: 1px 4px;
-  line-height: 1;
-  font-family: var(--mono);
-  transition: color 0.15s;
-  border-left: 1px solid var(--border);
-  margin-left: 2px;
-  color: var(--muted);
+  background: none; border: none; cursor: pointer; font-size: 10px;
+  padding: 2px 6px; line-height: 1; font-family: var(--mono);
+  transition: color 0.15s; border-left: 1px solid var(--border);
+  margin-left: 2px; color: var(--muted);
 }
 .tag-btn:hover { color: var(--accent); }
-.tag-del:hover { color: var(--warn) !important; }
+.tag-del:hover { color: var(--red) !important; }
 
 .month-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  padding: 4px 10px;
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--text);
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--bg); border: 1px solid var(--border);
+  padding: 5px 10px; font-family: var(--mono); font-size: 11px; color: var(--text);
 }
 .month-tag em { font-style: normal; color: var(--blue); font-size: 10px; }
 .month-tag .del-month {
   background: none; border: none; color: var(--muted);
-  cursor: pointer; font-size: 13px; padding: 0 0 0 4px;
+  cursor: pointer; font-size: 14px; padding: 0 0 0 4px;
   line-height: 1; transition: color 0.15s;
 }
-.month-tag .del-month:hover { color: var(--warn); }
+.month-tag .del-month:hover { color: var(--red); }
 
 .no-data { font-family: var(--mono); font-size: 12px; color: var(--muted); font-style: italic; }
 
-/* ── New customer row ── */
-.new-cust-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+/* New customer row */
+.new-cust-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
 .new-cust-row input[type=text] {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  color: var(--text);
-  font-family: var(--mono);
-  font-size: 12px;
-  padding: 7px 12px;
-  outline: none;
-  width: 220px;
+  background: var(--bg); border: 1.5px solid var(--border);
+  color: var(--text); font-family: var(--mono); font-size: 12px;
+  padding: 7px 12px; outline: none; flex: 1; min-width: 160px;
   transition: border-color 0.2s;
 }
 .new-cust-row input[type=text]:focus { border-color: var(--accent); }
 .new-cust-row input[type=text]::placeholder { color: var(--muted); }
 
-/* ── Add B data ── */
+/* Small buttons */
+.hbtn {
+  background: transparent; border: 1px solid var(--border);
+  color: var(--muted); font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 5px 12px; cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  white-space: nowrap; display: inline-flex; align-items: center;
+}
+.hbtn:hover { color: var(--red); border-color: var(--red); }
+.hbtn.blue { color: var(--blue); border-color: var(--blue); }
+.hbtn.blue:hover { background: var(--blue-dim); }
+.hbtn.green { color: var(--accent); border-color: var(--accent); }
+.hbtn.green:hover { background: var(--accent-dim); }
+
+input[type=file] { display: none; }
+
+/* B Add area */
 .add-b-row { display: flex; gap: 8px; align-items: flex-start; flex-wrap: wrap; }
 .add-b-row textarea {
   flex: 1; min-width: 200px;
-  background: var(--bg); border: 1px solid var(--border);
+  background: var(--bg); border: 1.5px solid var(--border);
   color: var(--text); font-family: var(--mono); font-size: 12px;
   line-height: 1.6; padding: 10px 12px; outline: none;
   resize: vertical; min-height: 100px; transition: border-color 0.2s;
@@ -289,131 +353,16 @@ h1 em { font-style: normal; color: var(--accent); }
 .add-b-row textarea::placeholder { color: var(--muted); }
 .add-b-btns { display: flex; flex-direction: column; gap: 6px; }
 
-/* ── Small header buttons ── */
-.hbtn {
-  background: transparent; border: 1px solid var(--border);
-  color: var(--muted); font-family: var(--mono); font-size: 10px;
-  letter-spacing: 0.06em; text-transform: uppercase;
-  padding: 3px 10px; cursor: pointer;
-  transition: color 0.15s, border-color 0.15s; white-space: nowrap;
-}
-.hbtn:hover { color: var(--warn); border-color: var(--warn); }
-.hbtn.blue:hover { color: var(--blue); border-color: var(--blue); }
-.hbtn.green:hover { color: var(--accent); border-color: var(--accent); }
-
-input[type=file] { display: none; }
-
-/* ── Input grid ── */
-.input-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-@media(max-width: 720px) { .input-row { grid-template-columns: 1fr; } }
-
-.panel { background: var(--surface); border: 1px solid var(--border); padding: 18px 20px; }
-
-.panel-header {
-  display: flex; align-items: center; gap: 8px;
-  margin-bottom: 12px; flex-wrap: wrap;
+/* Date check panel */
+#dateCheckPanel {
+  background: var(--bg); border: 1px solid var(--border);
+  padding: 14px 16px; margin-bottom: 14px;
 }
 
-.panel-label {
-  font-family: var(--mono); font-size: 11px;
-  letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600;
-}
-.panel-a .panel-label { color: var(--accent); }
-.panel-hint { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+/* B preview */
+#dbPreview { font-family: var(--mono); font-size: 12px; color: var(--muted); line-height: 1.8; margin-bottom: 12px; }
 
-.cust-loaded-label {
-  font-family: var(--mono); font-size: 11px;
-  color: var(--accent); margin-left: auto;
-}
-
-textarea.main-ta {
-  width: 100%; background: var(--bg); border: 1px solid var(--border);
-  color: var(--text); font-family: var(--mono); font-size: 12px;
-  line-height: 1.65; padding: 14px; resize: vertical; outline: none;
-  min-height: 240px; transition: border-color 0.2s;
-}
-textarea.main-ta::placeholder { color: var(--muted); }
-.panel-a textarea.main-ta:focus { border-color: var(--accent); }
-
-.counter {
-  margin-top: 7px; font-family: var(--mono); font-size: 11px;
-  color: var(--muted); text-align: right; min-height: 15px;
-}
-.panel-a .counter em { color: var(--accent); font-style: normal; }
-
-/* ── Customer dropdown ── */
-.cust-drop-wrap { position: relative; display: inline-block; }
-
-.cust-drop-panel {
-  display: none; position: absolute; top: calc(100% + 4px); left: 0;
-  background: var(--surface2); border: 1px solid var(--border);
-  border-top: 2px solid var(--accent);
-  z-index: 50; min-width: 240px; max-height: 280px;
-  overflow-y: auto; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-}
-.cust-drop-panel.show { display: block; }
-
-.drop-search-row { padding: 8px 10px; border-bottom: 1px solid var(--border); }
-.drop-search-row input {
-  width: 100%; background: var(--bg); border: 1px solid var(--border);
-  color: var(--text); font-family: var(--mono); font-size: 11px;
-  padding: 5px 8px; outline: none;
-}
-.drop-search-row input:focus { border-color: var(--accent); }
-.drop-search-row input::placeholder { color: var(--muted); }
-
-.drop-item {
-  padding: 9px 14px; font-family: var(--mono); font-size: 12px;
-  color: var(--text); cursor: pointer; display: flex;
-  justify-content: space-between; align-items: center;
-  transition: background 0.1s; border-bottom: 1px solid rgba(255,255,255,0.03);
-}
-.drop-item:hover { background: rgba(0,212,160,0.08); color: var(--accent); }
-.drop-item .di-count { font-size: 10px; color: var(--muted); }
-.drop-empty {
-  padding: 12px 14px; font-family: var(--mono); font-size: 11px;
-  color: var(--muted); font-style: italic;
-}
-
-/* ── Action bar ── */
-.action-bar {
-  display: flex; gap: 10px; align-items: center;
-  margin-bottom: 24px; flex-wrap: wrap;
-}
-
-.btn {
-  display: inline-flex; align-items: center; gap: 7px;
-  padding: 10px 22px; font-family: var(--mono); font-size: 12px;
-  font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
-  cursor: pointer; border: none; transition: opacity 0.15s, transform 0.1s;
-  white-space: nowrap;
-}
-.btn:active { transform: scale(0.97); }
-.btn-match { background: var(--accent); color: #0d0f12; }
-.btn-match:hover { opacity: 0.88; }
-.btn-export { background: transparent; color: var(--blue); border: 1px solid var(--blue); }
-.btn-export:hover { background: var(--blue-dim); }
-.btn-export:disabled { opacity: 0.3; cursor: not-allowed; }
-.btn-sm {
-  background: transparent; color: var(--muted);
-  border: 1px solid var(--border); font-size: 11px; padding: 10px 14px;
-}
-.btn-sm:hover { color: var(--warn); border-color: var(--warn); }
-
-.stat-row {
-  margin-left: auto; display: flex; gap: 16px;
-  font-family: var(--mono); font-size: 11px; color: var(--muted);
-}
-.stat-row span em { font-style: normal; font-weight: 600; }
-.stat-row .s-match em { color: var(--accent); }
-.stat-row .s-total em { color: var(--text); }
-
-/* ── Results ── */
+/* Results */
 .results-wrap { display: none; }
 .results-wrap.show { display: block; }
 
@@ -425,113 +374,119 @@ textarea.main-ta::placeholder { color: var(--muted); }
 .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
 .table-scroll {
-  overflow-x: auto; background: var(--surface);
+  overflow-x: auto; background: var(--bg);
   border: 1px solid var(--border); margin-bottom: 20px;
 }
 
-table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12px; min-width: 600px; }
+table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12px; min-width: 540px; }
 thead tr { background: var(--surface2); border-bottom: 1px solid var(--border); }
 th {
   padding: 10px 14px; text-align: left; font-size: 10px;
-  letter-spacing: 0.12em; text-transform: uppercase;
+  letter-spacing: 0.1em; text-transform: uppercase;
   color: var(--muted); font-weight: 600; white-space: nowrap;
 }
-tbody tr { border-bottom: 1px solid rgba(255,255,255,0.04); transition: background 0.1s; }
-tbody tr:hover { background: var(--surface2); }
-td { padding: 9px 14px; vertical-align: middle; color: var(--text); white-space: nowrap; }
+tbody tr { border-bottom: 1px solid var(--surface2); transition: background 0.1s; }
+tbody tr:hover { background: var(--surface); }
+td { padding: 8px 14px; vertical-align: middle; color: var(--text); white-space: nowrap; }
 .td-docno { font-weight: 600; color: var(--accent); }
 .td-date { color: var(--muted); }
-.td-amt { text-align: right; color: var(--blue); }
+.td-amt { text-align: right; color: var(--blue); font-weight: 600; }
 
-/* ── Toast ── */
+/* Toast */
 .toast {
-  position: fixed; bottom: 24px; right: 20px;
-  background: var(--surface2); border: 1px solid var(--border);
+  position: fixed; bottom: 22px; right: 16px;
+  background: var(--text);
   padding: 10px 18px; font-family: var(--mono); font-size: 12px;
-  color: var(--accent); z-index: 999; opacity: 0;
+  color: #fff; z-index: 999; opacity: 0;
   transform: translateY(8px); transition: all 0.25s;
-  pointer-events: none; max-width: 300px; line-height: 1.5;
+  pointer-events: none; max-width: 280px; line-height: 1.5;
 }
 .toast.show { opacity: 1; transform: translateY(0); }
-.toast.warn { color: var(--warn); border-color: var(--warn); }
-.toast.err { color: var(--red); border-color: var(--red); }
+.toast.warn { background: var(--warn); }
+.toast.err { background: var(--red); }
 
-/* ── Overlays ── */
+/* Overlays */
 .overlay {
   display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,0.75); z-index: 100;
-  align-items: center; justify-content: center; padding: 20px;
+  background: rgba(0,0,0,0.4); z-index: 100;
+  align-items: center; justify-content: center; padding: 16px;
 }
 .overlay.show { display: flex; }
 
 /* Confirm dialog */
 .dialog {
-  background: var(--surface2); border: 1px solid var(--border);
-  padding: 24px 28px; max-width: 360px; width: 90%;
+  background: var(--bg); border: 1.5px solid var(--border);
+  padding: 24px; max-width: 360px; width: 90%;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.15);
 }
-.dialog-title { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--warn); margin-bottom: 10px; }
+.dialog-title { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--red); margin-bottom: 10px; }
 .dialog-msg { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-bottom: 20px; line-height: 1.7; white-space: pre-line; }
 .dialog-btns { display: flex; gap: 10px; justify-content: flex-end; }
 .dialog-btns button {
-  font-family: var(--mono); font-size: 11px; padding: 7px 16px;
-  cursor: pointer; border: 1px solid var(--border); background: transparent;
+  font-family: var(--mono); font-size: 11px; padding: 8px 16px;
+  cursor: pointer; border: 1px solid var(--border); background: var(--bg);
   color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; transition: all 0.15s;
 }
-.dialog-btns .confirm-del { color: var(--warn); border-color: var(--warn); }
-.dialog-btns button:hover { opacity: 0.8; }
+.dialog-btns .confirm-del { color: var(--red); border-color: var(--red); }
+.dialog-btns button:hover { opacity: 0.75; }
 
 /* Manage modal */
 .manage-modal {
-  background: var(--surface2); border: 1px solid var(--border);
-  border-top: 2px solid var(--accent); width: 90%; max-width: 680px;
-  max-height: 82vh; display: flex; flex-direction: column;
+  background: var(--bg); border: 1.5px solid var(--accent);
+  width: 94%; max-width: 680px;
+  max-height: 85vh; display: flex; flex-direction: column;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.15);
 }
 .manage-header {
-  padding: 14px 20px; border-bottom: 1px solid var(--border);
+  padding: 14px 18px; border-bottom: 1px solid var(--border);
   display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+  background: var(--surface);
 }
 .manage-title { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--accent); flex: 1; }
-.manage-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
-.manage-footer {
-  padding: 12px 20px; border-top: 1px solid var(--border);
-  display: flex; gap: 8px; flex-wrap: wrap; flex-shrink: 0;
-}
+.manage-body { flex: 1; overflow-y: auto; padding: 16px 18px; }
 
-.manage-table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12px; }
-.manage-table th {
-  padding: 8px 12px; text-align: left; font-size: 10px;
-  letter-spacing: 0.1em; color: var(--muted); background: var(--surface);
-  border-bottom: 1px solid var(--border); white-space: nowrap;
-}
-.manage-table td { padding: 7px 12px; border-bottom: 1px solid rgba(255,255,255,0.04); color: var(--text); }
-.manage-table tr:hover td { background: rgba(255,255,255,0.03); }
-.manage-table .del-rec {
-  background: none; border: none; color: var(--muted); cursor: pointer;
-  font-size: 14px; padding: 0; line-height: 1; transition: color 0.15s; font-family: var(--mono);
-}
-.manage-table .del-rec:hover { color: var(--warn); }
-
-.manage-add-ta {
-  width: 100%; background: var(--bg); border: 1px solid var(--border);
+.manage-raw-ta {
+  width: 100%; background: var(--surface); border: 1.5px solid var(--border);
   color: var(--text); font-family: var(--mono); font-size: 11px;
-  padding: 8px 10px; resize: vertical; min-height: 70px; outline: none;
-  transition: border-color 0.2s; flex: 1;
+  padding: 10px 12px; resize: vertical; min-height: 200px; outline: none;
+  transition: border-color 0.2s; line-height: 1.65;
 }
-.manage-add-ta:focus { border-color: var(--accent); }
-.manage-add-ta::placeholder { color: var(--muted); }
-.manage-add-col { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 200px; }
-.manage-add-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+.manage-raw-ta:focus { border-color: var(--accent); }
+.manage-raw-ta::placeholder { color: var(--muted); }
 
-/* Customer select modal */
-.cust-sel-modal {
-  background: var(--surface2); border: 1px solid var(--border);
-  border-top: 2px solid var(--blue); width: 90%; max-width: 360px;
-  max-height: 70vh; display: flex; flex-direction: column;
+.manage-section-label {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--muted);
+  margin-bottom: 6px; display: block;
 }
-.cust-sel-header { padding: 14px 18px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+
+.manage-btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+
+.manage-append-ta {
+  width: 100%; background: var(--surface); border: 1.5px solid var(--border);
+  color: var(--text); font-family: var(--mono); font-size: 11px;
+  padding: 8px 12px; resize: vertical; min-height: 80px; outline: none;
+  transition: border-color 0.2s; line-height: 1.65;
+}
+.manage-append-ta:focus { border-color: var(--accent); }
+.manage-append-ta::placeholder { color: var(--muted); }
+
+.manage-divider {
+  border: none; border-top: 1px solid var(--border);
+  margin: 18px 0 14px;
+}
+
+/* Customer selector */
+.cust-sel-modal {
+  background: var(--bg); border: 1.5px solid var(--blue);
+  width: 90%; max-width: 340px; max-height: 70vh;
+  display: flex; flex-direction: column;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+}
+.cust-sel-header { padding: 14px 18px; border-bottom: 1px solid var(--border); flex-shrink: 0; background: var(--surface); }
 .cust-sel-title { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--blue); margin-bottom: 8px; }
 .cust-sel-search {
-  width: 100%; background: var(--bg); border: 1px solid var(--border);
+  width: 100%; background: var(--bg); border: 1.5px solid var(--border);
   color: var(--text); font-family: var(--mono); font-size: 12px;
   padding: 6px 10px; outline: none; transition: border-color 0.2s;
 }
@@ -542,163 +497,93 @@ td { padding: 9px 14px; vertical-align: middle; color: var(--text); white-space:
   padding: 10px 18px; font-family: var(--mono); font-size: 12px;
   color: var(--text); cursor: pointer; display: flex;
   justify-content: space-between; align-items: center;
-  border-bottom: 1px solid rgba(255,255,255,0.04); transition: background 0.1s;
+  border-bottom: 1px solid var(--surface2); transition: background 0.1s;
 }
 .cust-sel-item:hover { background: var(--blue-dim); color: var(--blue); }
 .cust-sel-item .si-count { font-size: 10px; color: var(--muted); }
-.cust-sel-footer { padding: 10px 18px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; flex-shrink: 0; }
+.cust-sel-footer {
+  padding: 10px 18px; border-top: 1px solid var(--border);
+  display: flex; justify-content: flex-end;
+  background: var(--surface); flex-shrink: 0;
+}
+
+/* Mobile */
+@media(max-width:640px) {
+  body { padding: 12px 10px 80px; }
+  .header { margin-bottom: 14px; }
+  textarea.main-ta { min-height: 140px; }
+  .btn-match { width: 100%; justify-content: center; }
+  .qbtn { padding: 9px 14px; font-size: 11px; }
+}
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <!-- ══════════════════════════════════════════════════
-       HEADER
-  ══════════════════════════════════════════════════ -->
+  <!-- HEADER -->
   <div class="header">
     <div class="header-left">
-      <div class="badge">单据匹配系统 v2</div>
-      <h1>单据号码 <em>匹配工具</em></h1>
-      <p class="desc">A / B 组资料均永久保存于本机 · A 组按顾客名字管理 · B 组按月份管理</p>
+      <h1>单据号码 <em>匹配工具</em> <span style="font-size:11px;color:var(--muted);font-weight:400">v2</span></h1>
+      <p class="desc">A 组按顾客管理 · B 组按月份管理 · 本机永久保存</p>
     </div>
-
-    <div class="header-actions">
+    <div>
       <div class="quick-bar">
         <button class="qbtn qbtn-paste" onclick="quickPaste()">⬆ 粘贴</button>
         <button class="qbtn qbtn-add" onclick="quickAdd()">＋ 添加</button>
-        <button class="qbtn qbtn-clear" onclick="confirmClearAll()">✕ 清空所有资料</button>
+        <button class="qbtn qbtn-clear" onclick="confirmClearAll()">✕ 清空</button>
       </div>
       <div class="paste-preview" id="pastePreview">
-        <span class="paste-label">剪贴板预览</span>
         <span id="pastePreviewText"></span>
       </div>
     </div>
   </div>
 
-  <!-- ══════════════════════════════════════════════════
-       A 组 顾客资料库
-  ══════════════════════════════════════════════════ -->
-  <div class="db-section">
-    <div class="db-header">
-      <span class="db-title db-title-a">A 组 — 顾客资料库</span>
-      <span class="db-total db-total-a">已储存 <em id="adbTotal">0</em> 条记录，共 <em id="adbCount">0</em> 位顾客</span>
-    </div>
-
-    <div class="tag-list" id="custList">
-      <span class="no-data">（尚无顾客，请在下方新建）</span>
-    </div>
-
-    <div class="new-cust-row">
-      <input type="text" id="newCustName" placeholder="输入顾客名字…" onkeydown="if(event.key==='Enter')addCustomer()">
-      <button class="hbtn green" onclick="addCustomer()" style="border-color:var(--accent);color:var(--accent)">＋ 新建顾客</button>
-    </div>
-  </div>
-
-  <!-- ══════════════════════════════════════════════════
-       B 组资料库
-  ══════════════════════════════════════════════════ -->
-  <div class="db-section">
-    <div class="db-header">
-      <span class="db-title db-title-b">B 组 — 资料库</span>
-      <span class="db-total db-total-b">已储存 <em id="dbTotal">0</em> 条记录，共 <em id="dbMonths">0</em> 个月份</span>
-    </div>
-
-    <div class="tag-list" id="monthList">
-      <span class="no-data">（资料库是空的，请在下方添加）</span>
-    </div>
-
-    <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-      <button class="hbtn" style="color:var(--accent);border-color:var(--accent)" onclick="toggleDateCheck()">📅 检查日期完整性</button>
-      <button class="hbtn blue" onclick="importBJSON()" style="color:var(--blue);border-color:var(--blue)">⬆ 导入B组资料 (JSON)</button>
-      <button class="hbtn blue" onclick="exportBJSON()" style="color:var(--blue);border-color:rgba(61,158,255,0.5)">⬇ 导出B组资料 (JSON)</button>
-      <input type="file" id="fileBImport" accept=".json,application/json" onchange="handleBImport(this.files[0])">
-    </div>
-
-    <div id="dateCheckPanel" style="display:none;margin-bottom:14px;background:var(--bg);border:1px solid var(--border);padding:14px 16px">
-      <div id="dateCheckContent" style="font-family:var(--mono);font-size:12px;line-height:1.9"></div>
-    </div>
-
-    <div class="add-b-row">
-      <textarea id="inputBAdd" placeholder="在此粘贴新的 B 组资料，按「添加到资料库」存入...
-
-资料会自动按日期分月储存，关闭浏览器也不会消失。
-例：
-(2026-03-26)
-H-4-2626 (49186)
-1 B IBOX
-33.33
-..."></textarea>
-      <div class="add-b-btns">
-        <input type="file" id="fileBAdd" accept=".txt,text/plain" onchange="loadFileToAdd()">
-        <button class="hbtn blue" onclick="document.getElementById('fileBAdd').click()">📂 载入文件</button>
-        <button class="hbtn green" onclick="addToDatabase()" style="border-color:var(--accent);color:var(--accent)">＋ 添加到资料库</button>
-        <button class="hbtn" onclick="document.getElementById('inputBAdd').value='';document.getElementById('fileBAdd').value=''">✕ 清空</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ══════════════════════════════════════════════════
-       A 组 + B 组 预览输入区
-  ══════════════════════════════════════════════════ -->
-  <div class="input-row">
-    <!-- A 组 -->
-    <div class="panel panel-a">
-      <div class="panel-header">
-        <span class="panel-label">A 组 — 单据来源</span>
-        <!-- Customer dropdown -->
-        <div class="cust-drop-wrap" id="custDropWrap">
-          <button class="hbtn green" onclick="toggleCustDrop()" style="border-color:var(--accent);color:var(--accent)">顾客 ▾</button>
-          <div class="cust-drop-panel" id="custDropPanel">
-            <div class="drop-search-row">
-              <input type="text" id="dropSearchInput" placeholder="搜索顾客…" oninput="renderCustDrop()" onclick="event.stopPropagation()">
-            </div>
-            <div id="dropList"></div>
+  <!-- MAIN: A input + Match button -->
+  <div class="panel-a">
+    <div class="panel-header">
+      <span class="panel-label">A 组 — 单据来源</span>
+      <div class="cust-drop-wrap" id="custDropWrap">
+        <button class="hbtn green" onclick="toggleCustDrop()">顾客 ▾</button>
+        <div class="cust-drop-panel" id="custDropPanel">
+          <div class="drop-search-row">
+            <input type="text" id="dropSearchInput" placeholder="搜索顾客…" oninput="renderCustDrop()" onclick="event.stopPropagation()">
           </div>
+          <div id="dropList"></div>
         </div>
-        <span class="cust-loaded-label" id="loadedCustLabel"></span>
-        <input type="file" id="fileA" accept=".txt,text/plain" onchange="loadFile('A')">
-        <button class="hbtn blue" onclick="document.getElementById('fileA').click()">📂 文件</button>
-        <button class="hbtn" onclick="clearPanelA()">✕</button>
       </div>
-      <textarea class="main-ta" id="inputA" placeholder="两种模式皆可：
+      <span class="cust-loaded-label" id="loadedCustLabel"></span>
+      <input type="file" id="fileA" accept=".txt,text/plain" onchange="loadFile('A')">
+      <button class="hbtn blue" onclick="document.getElementById('fileA').click()">📂 文件</button>
+      <button class="hbtn" onclick="clearPanelA()">✕</button>
+    </div>
+    <textarea class="main-ta" id="inputA" placeholder="两种输入方式：
 
-【模式一】贴入完整单据（自动提取日期）：
+【完整单据】贴入 WhatsApp 单据原文，自动提取号码和日期：
 26.03.02 1659
 (34789)
+1 B IBOX
+33.33
 ...
 
-【模式二】直接输入5位号码（每行一个）：
+【手动号码】直接输入5位号码，每行一个：
 34789
 35162
-日期将自动取自 B 组
 
 或点击上方「顾客 ▾」载入已保存的顾客资料"></textarea>
-      <div class="counter" id="counterA">—</div>
-    </div>
-
-    <!-- B 组预览 -->
-    <div class="panel" style="border-color: rgba(61,158,255,0.3)">
-      <div class="panel-header">
-        <span class="panel-label" style="color:var(--blue)">B 组 — 资料库预览</span>
-      </div>
-      <div id="dbPreview" style="font-family:var(--mono);font-size:12px;color:var(--muted);line-height:1.8;min-height:100px">
-        资料库为空
-      </div>
-    </div>
+    <div class="counter" id="counterA">—</div>
   </div>
 
-  <!-- Action bar -->
   <div class="action-bar">
     <button class="btn btn-match" onclick="runMatch()">▶ 开始匹配</button>
     <button class="btn btn-export" id="btnExport" onclick="exportExcel()" disabled>⬇ 导出 Excel</button>
-    <button class="btn btn-sm" onclick="clearPanelA()">✕ 清空 A 组</button>
+    <button class="btn btn-sm" onclick="clearPanelA()">✕ 清空 A</button>
     <div class="stat-row" id="statRow" style="display:none">
       <span class="s-total">B库 <em id="sTotal">0</em> 条</span>
       <span class="s-match">匹配 <em id="sMatch">0</em></span>
     </div>
   </div>
 
-  <!-- Results -->
+  <!-- RESULTS -->
   <div class="results-wrap" id="resultsWrap">
     <div class="section-title">匹配结果</div>
     <div class="table-scroll">
@@ -714,11 +599,72 @@ H-4-2626 (49186)
     </div>
   </div>
 
-</div><!-- /wrap -->
+  <!-- A 组顾客管理 (collapsible) -->
+  <div class="collapse-section">
+    <div class="collapse-header" id="aHeader" onclick="toggleSection('a')">
+      <span class="collapse-title collapse-title-a">A 组 — 顾客资料库</span>
+      <span class="collapse-meta collapse-meta-a"><em id="adbTotal">0</em> 条 · <em id="adbCount">0</em> 位顾客</span>
+      <span class="collapse-arrow">▶</span>
+    </div>
+    <div class="collapse-body" id="aBody">
+      <div class="tag-list" id="custList">
+        <span class="no-data">（尚无顾客，请在下方新建）</span>
+      </div>
+      <div class="new-cust-row">
+        <input type="text" id="newCustName" placeholder="输入顾客名字…" onkeydown="if(event.key==='Enter')addCustomer()">
+        <button class="hbtn green" onclick="addCustomer()">＋ 新建顾客</button>
+      </div>
+    </div>
+  </div>
 
-<!-- ══════════════════════════════════════════════════
-     MODALS
-══════════════════════════════════════════════════ -->
+  <!-- B 组资料库 (collapsible) -->
+  <div class="collapse-section">
+    <div class="collapse-header" id="bHeader" onclick="toggleSection('b')">
+      <span class="collapse-title collapse-title-b">B 组 — 资料库</span>
+      <span class="collapse-meta collapse-meta-b"><em id="dbTotal">0</em> 条 · <em id="dbMonths">0</em> 个月份</span>
+      <span class="collapse-arrow">▶</span>
+    </div>
+    <div class="collapse-body" id="bBody">
+      <div class="tag-list" id="monthList">
+        <span class="no-data">（资料库是空的）</span>
+      </div>
+
+      <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <button class="hbtn" style="color:var(--blue);border-color:var(--blue)" onclick="toggleDateCheck()">📅 检查日期</button>
+        <label class="hbtn blue" style="cursor:pointer">
+          ⬆ 导入JSON
+          <input type="file" accept=".json,application/json" onchange="handleBImport(this.files[0]);this.value=''">
+        </label>
+        <button class="hbtn blue" onclick="exportBJSON()">⬇ 导出JSON</button>
+      </div>
+
+      <div id="dateCheckPanel" style="display:none">
+        <div id="dateCheckContent" style="font-family:var(--mono);font-size:12px;line-height:1.9"></div>
+      </div>
+
+      <div id="dbPreview">资料库为空</div>
+
+      <div class="add-b-row">
+        <textarea id="inputBAdd" placeholder="在此粘贴 B 组资料，按「添加到资料库」存入…
+
+(2026-03-26)
+H-4-2626 (49186)
+1 B IBOX
+33.33
+..."></textarea>
+        <div class="add-b-btns">
+          <label class="hbtn blue" style="cursor:pointer">
+            📂 载入文件
+            <input type="file" accept=".txt,text/plain" onchange="loadFileToAdd(this.files[0]);this.value=''">
+          </label>
+          <button class="hbtn green" onclick="addToDatabase()">＋ 添加到资料库</button>
+          <button class="hbtn" onclick="document.getElementById('inputBAdd').value=''">✕ 清空</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /wrap -->
 
 <!-- Confirm dialog -->
 <div class="overlay" id="overlay">
@@ -732,7 +678,7 @@ H-4-2626 (49186)
   </div>
 </div>
 
-<!-- Manage customer modal -->
+<!-- Manage modal -->
 <div class="overlay" id="manageOverlay">
   <div class="manage-modal">
     <div class="manage-header">
@@ -741,21 +687,26 @@ H-4-2626 (49186)
       <button class="hbtn" onclick="closeManage()">✕ 关闭</button>
     </div>
     <div class="manage-body">
-      <div id="manageTableWrap"></div>
-    </div>
-    <div class="manage-footer">
-      <div class="manage-add-col">
-        <textarea class="manage-add-ta" id="manageAddInput" placeholder="粘贴单据资料到此处，按「添加」追加到此顾客…"></textarea>
-        <div class="manage-add-btns">
-          <button class="hbtn green" onclick="manageAdd()" style="border-color:var(--accent);color:var(--accent)">＋ 添加</button>
-          <button class="hbtn" onclick="document.getElementById('manageAddInput').value=''">✕ 清空输入</button>
-        </div>
+      <span class="manage-section-label">原始资料（可直接编辑后保存）</span>
+      <textarea class="manage-raw-ta" id="manageRawTa" placeholder="此顾客暂无资料"></textarea>
+      <div class="manage-btn-row">
+        <button class="hbtn green" onclick="saveManageRaw()">💾 保存编辑</button>
+        <button class="hbtn" onclick="confirmClearCust()">🗑 清空此顾客资料</button>
+      </div>
+
+      <hr class="manage-divider">
+
+      <span class="manage-section-label">追加新资料</span>
+      <textarea class="manage-append-ta" id="manageAddInput" placeholder="粘贴新的单据资料，按「追加」添加到此顾客…"></textarea>
+      <div class="manage-btn-row">
+        <button class="hbtn green" onclick="manageAdd()">＋ 追加</button>
+        <button class="hbtn" onclick="document.getElementById('manageAddInput').value=''">✕ 清空输入</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Customer selector (quick-add) -->
+<!-- Customer selector -->
 <div class="overlay" id="custSelOverlay">
   <div class="cust-sel-modal">
     <div class="cust-sel-header">
@@ -772,35 +723,82 @@ H-4-2626 (49186)
 <div class="toast" id="toast"></div>
 
 <script>
-// ════════════════════════════════════════════════════════
-// A 组 STORAGE
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════
+// A 组 STORAGE  (raw text per customer)
+// ════════════════════════════════════════
 const A_CUSTOMERS_KEY = 'adb_customers';
-const A_DATA_PFX = 'adb_data_';
+const A_RAW_PFX  = 'adb_raw_';
+const A_DATA_PFX = 'adb_data_';  // legacy — migration only
 
 function getCustomers() {
   try { return JSON.parse(localStorage.getItem(A_CUSTOMERS_KEY)) || []; }
   catch { return []; }
 }
-function saveCustomers(arr) {
-  localStorage.setItem(A_CUSTOMERS_KEY, JSON.stringify(arr));
-}
-function getCustRecs(name) {
-  try { return JSON.parse(localStorage.getItem(A_DATA_PFX + name)) || []; }
-  catch { return []; }
-}
-function saveCustRecs(name, recs) {
-  localStorage.setItem(A_DATA_PFX + name, JSON.stringify(recs));
-}
+function saveCustomers(arr) { localStorage.setItem(A_CUSTOMERS_KEY, JSON.stringify(arr)); }
+
+function getCustRaw(name) { return localStorage.getItem(A_RAW_PFX + name) || ''; }
+function saveCustRaw(name, text) { localStorage.setItem(A_RAW_PFX + name, text); }
+
 function deleteCustData(name) {
-  const custs = getCustomers().filter(c => c !== name);
-  saveCustomers(custs);
+  saveCustomers(getCustomers().filter(c => c !== name));
+  localStorage.removeItem(A_RAW_PFX + name);
   localStorage.removeItem(A_DATA_PFX + name);
 }
 
-// ════════════════════════════════════════════════════════
+function getCustDocCount(name) { return parseA(getCustRaw(name)).map.size; }
+
+// Append raw text; skip only when ALL parsed docNos are duplicates
+function addRawToCust(name, newText) {
+  const trimmed = newText.trim();
+  if (!trimmed) return { added: 0, dupes: 0 };
+
+  const existing = getCustRaw(name);
+  const existingDocNos = new Set(parseA(existing).map.keys());
+  const { map: newMap } = parseA(trimmed);
+
+  let added = 0, dupes = 0;
+  for (const docNo of newMap.keys()) {
+    if (existingDocNos.has(docNo)) dupes++;
+    else added++;
+  }
+
+  if (newMap.size === 0 || added > 0) {
+    const combined = existing ? existing.trimEnd() + '\n\n' + trimmed : trimmed;
+    saveCustRaw(name, combined);
+    return { added: newMap.size === 0 ? 1 : added, dupes };
+  }
+  return { added: 0, dupes };
+}
+
+// Migrate old adb_data_ records → adb_raw_ text
+function migrateOldAData() {
+  const custs = getCustomers();
+  let migrated = 0;
+  for (const name of custs) {
+    if (localStorage.getItem(A_RAW_PFX + name) !== null) continue;
+    const oldJson = localStorage.getItem(A_DATA_PFX + name);
+    if (!oldJson) continue;
+    try {
+      const recs = JSON.parse(oldJson) || [];
+      if (!recs.length) continue;
+      const noDate = recs.filter(r => !r.date).map(r => r.docNo);
+      const byDate = {};
+      for (const r of recs.filter(r => r.date)) {
+        if (!byDate[r.date]) byDate[r.date] = [];
+        byDate[r.date].push(r.docNo);
+      }
+      const lines = [...noDate];
+      for (const [d, nos] of Object.entries(byDate).sort()) lines.push(d, ...nos);
+      saveCustRaw(name, lines.join('\n'));
+      migrated++;
+    } catch {}
+  }
+  if (migrated > 0) showToast(`已迁移 ${migrated} 位顾客的旧格式资料`);
+}
+
+// ════════════════════════════════════════
 // A 组 UI
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════
 function refreshAUI() {
   const custs = getCustomers();
   const list = document.getElementById('custList');
@@ -815,37 +813,32 @@ function refreshAUI() {
 
   list.innerHTML = '';
   for (const name of custs) {
-    const recs = getCustRecs(name);
-    total += recs.length;
+    const cnt = getCustDocCount(name);
+    total += cnt;
 
     const tag = document.createElement('span');
     tag.className = 'cust-tag';
+    tag.appendChild(document.createTextNode(name + ' '));
 
-    const nameNode = document.createTextNode(name + ' ');
-    tag.appendChild(nameNode);
-
-    const cnt = document.createElement('span');
-    cnt.className = 'tag-count';
-    cnt.textContent = recs.length + '条';
-    tag.appendChild(cnt);
+    const cntEl = document.createElement('span');
+    cntEl.className = 'tag-count';
+    cntEl.textContent = cnt + '条';
+    tag.appendChild(cntEl);
 
     const mgBtn = document.createElement('button');
     mgBtn.className = 'tag-btn';
-    mgBtn.title = '管理此顾客资料';
     mgBtn.textContent = '管理';
     mgBtn.onclick = () => openManage(name);
     tag.appendChild(mgBtn);
 
     const delBtn = document.createElement('button');
     delBtn.className = 'tag-btn tag-del';
-    delBtn.title = '删除此顾客';
     delBtn.textContent = '×';
     delBtn.onclick = () => confirmDeleteCust(name);
     tag.appendChild(delBtn);
 
     list.appendChild(tag);
   }
-
   document.getElementById('adbTotal').textContent = total;
   document.getElementById('adbCount').textContent = custs.length;
 }
@@ -858,16 +851,15 @@ function addCustomer() {
   if (custs.includes(name)) { showToast(`「${name}」已存在`); return; }
   custs.push(name);
   saveCustomers(custs);
-  saveCustRecs(name, []);
   inp.value = '';
   refreshAUI();
   renderCustDrop();
   showToast(`已新建顾客「${name}」`);
 }
 
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════
 // B 组 STORAGE
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════
 const B_PFX = 'bdb_';
 
 function getAllMonthKeys() {
@@ -895,14 +887,13 @@ function monthKeyFromDate(dateStr) {
   return m ? B_PFX + m[1] : null;
 }
 function monthLabel(mk) {
-  const s = mk.replace(B_PFX, '');
-  const [y, mo] = s.split('-');
+  const [y, mo] = mk.replace(B_PFX, '').split('-');
   return `${y}年${parseInt(mo)}月`;
 }
 
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════
 // B 组 UI
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════
 function refreshBUI() {
   const keys = getAllMonthKeys();
   const list = document.getElementById('monthList');
@@ -910,7 +901,7 @@ function refreshBUI() {
   let total = 0;
 
   if (!keys.length) {
-    list.innerHTML = '<span class="no-data">（资料库是空的，请在下方添加）</span>';
+    list.innerHTML = '<span class="no-data">（资料库是空的）</span>';
     preview.textContent = '资料库为空';
     document.getElementById('dbTotal').textContent = '0';
     document.getElementById('dbMonths').textContent = '0';
@@ -931,23 +922,21 @@ function refreshBUI() {
     tag.appendChild(em);
     const delBtn = document.createElement('button');
     delBtn.className = 'del-month';
-    delBtn.title = '删除此月份';
     delBtn.textContent = '×';
     delBtn.onclick = () => confirmDeleteMonth(k);
     tag.appendChild(delBtn);
     list.appendChild(tag);
-
-    lines.push(`▸ ${monthLabel(k)}：${recs.length} 条记录`);
+    lines.push(`▸ ${monthLabel(k)}：${recs.length} 条`);
   }
 
-  preview.innerHTML = lines.map(l => `<div style="color:var(--text)">${esc(l)}</div>`).join('');
+  preview.innerHTML = lines.map(l => `<div>${esc(l)}</div>`).join('');
   document.getElementById('dbTotal').textContent = total;
   document.getElementById('dbMonths').textContent = keys.length;
 }
 
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════
 // ADD TO B DATABASE
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════
 function addToDatabase() {
   const text = document.getElementById('inputBAdd').value.trim();
   if (!text) { showToast('请先输入或载入 B 组资料'); return; }
@@ -975,7 +964,6 @@ function addToDatabase() {
   }
 
   document.getElementById('inputBAdd').value = '';
-  document.getElementById('fileBAdd').value = '';
   refreshBUI();
 
   if (bSync && added > 0) {
@@ -993,9 +981,29 @@ function addToDatabase() {
   showToast(msg);
 }
 
-// ════════════════════════════════════════════════════════
-// DELETE CONFIRMS
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════
+// COLLAPSIBLE SECTIONS
+// ════════════════════════════════════════
+function toggleSection(id) {
+  const header = document.getElementById(id + 'Header');
+  const body   = document.getElementById(id + 'Body');
+  const open   = body.classList.contains('open');
+  body.classList.toggle('open', !open);
+  header.classList.toggle('open', !open);
+}
+
+function initSections() {
+  if (window.innerWidth >= 768) {
+    ['a', 'b'].forEach(id => {
+      document.getElementById(id + 'Body').classList.add('open');
+      document.getElementById(id + 'Header').classList.add('open');
+    });
+  }
+}
+
+// ════════════════════════════════════════
+// CONFIRM DIALOGS
+// ════════════════════════════════════════
 let pendingAction = null;
 
 function showConfirm(title, msg, onConfirm) {
@@ -1021,52 +1029,41 @@ function confirmDeleteMonth(mk) {
 }
 
 function confirmDeleteCust(name) {
-  const n = getCustRecs(name).length;
   showConfirm(
     `删除顾客「${name}」`,
-    `确定要删除顾客「${name}」及其全部 ${n} 条记录吗？\n此操作无法复原。`,
-    () => {
-      deleteCustData(name);
-      closeDialog();
-      refreshAUI();
-      renderCustDrop();
-      showToast(`已删除顾客「${name}」`);
-    }
+    `确定要删除顾客「${name}」及其全部资料吗？\n此操作无法复原。`,
+    () => { deleteCustData(name); closeDialog(); refreshAUI(); renderCustDrop(); showToast(`已删除顾客「${name}」`); }
   );
 }
 
 function confirmClearAll() {
   const custs = getCustomers();
   if (!custs.length) { showToast('A 组资料库是空的'); return; }
-  const total = custs.reduce((s, n) => s + getCustRecs(n).length, 0);
   showConfirm(
     '清空所有顾客资料',
-    `确定要清空所有 ${custs.length} 位顾客的全部 ${total} 条资料吗？\n顾客名字保留，只清空资料内容。\n此操作无法复原。`,
+    `确定要清空所有 ${custs.length} 位顾客的全部资料吗？\n顾客名字保留，只清空资料内容。\n此操作无法复原。`,
     () => {
-      for (const name of custs) saveCustRecs(name, []);
-      closeDialog();
-      refreshAUI();
-      clearPanelA();
-      showToast('已清空所有顾客资料（顾客名字保留）');
+      for (const name of custs) saveCustRaw(name, '');
+      closeDialog(); refreshAUI(); clearPanelA();
+      showToast('已清空所有顾客资料');
     }
   );
 }
 
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════
 // PARSERS
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════
 function parseA(text) {
+  if (!text || !text.trim()) return { mode: 'manual', map: new Map() };
   const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
   const hasReceiptDate = lines.some(l => /\d{2}\.\d{2}\.\d{2}\s+\d{3,4}/.test(l));
-  const hasIsoDate = lines.some(l => /^\d{4}-\d{2}-\d{2}$/.test(l));
+  const hasIsoDate     = lines.some(l => /^\d{4}-\d{2}-\d{2}$/.test(l));
   const map = new Map();
 
   if (!hasReceiptDate && !hasIsoDate) {
-    for (const line of lines) {
-      for (const m of line.matchAll(/(?<!\d)(\d{5})(?!\d)/g)) {
-        map.set(m[1], '');
-      }
-    }
+    for (const line of lines)
+      for (const m of line.matchAll(/(?<!\d)(\d{5})(?!\d)/g))
+        if (!map.has(m[1])) map.set(m[1], '');
     return { mode: 'manual', map };
   }
 
@@ -1078,9 +1075,8 @@ function parseA(text) {
     m = line.match(/(\d{2})\.(\d{2})\.(\d{2})\s+\d{3,4}/);
     if (m) { currentDate = `20${m[1]}-${m[2]}-${m[3]}`; continue; }
 
-    for (const dm of line.matchAll(/\((\d{5})\)/g)) {
+    for (const dm of line.matchAll(/\((\d{5})\)/g))
       if (!map.has(dm[1])) map.set(dm[1], currentDate || '(日期未识别)');
-    }
 
     if (hasIsoDate) {
       m = line.match(/^(\d{5})$/);
@@ -1124,62 +1120,9 @@ function parseB(text) {
   return records;
 }
 
-// ════════════════════════════════════════════════════════
-// CUSTOMER RECORD HELPERS
-// ════════════════════════════════════════════════════════
-
-// Add parsed records from text to a customer; returns {added, dupes}
-function addRecsToCust(name, text) {
-  const { map } = parseA(text);
-  if (!map.size) return { added: 0, dupes: 0 };
-
-  const existing = getCustRecs(name);
-  const exSet = new Set(existing.map(r => r.docNo));
-  let added = 0, dupes = 0;
-  const newOnes = [];
-
-  for (const [docNo, date] of map.entries()) {
-    if (exSet.has(docNo)) { dupes++; continue; }
-    newOnes.push({ docNo, date });
-    exSet.add(docNo);
-    added++;
-  }
-
-  if (newOnes.length) saveCustRecs(name, [...existing, ...newOnes]);
-  return { added, dupes };
-}
-
-// Convert stored records back to loadable text for the A textarea
-function custRecsToText(name) {
-  const recs = getCustRecs(name);
-  if (!recs.length) return '';
-
-  const noDate = recs.filter(r => !r.date).map(r => r.docNo);
-  const withDate = recs.filter(r => r.date);
-
-  const byDate = {};
-  for (const r of withDate) {
-    if (!byDate[r.date]) byDate[r.date] = [];
-    byDate[r.date].push(r.docNo);
-  }
-
-  // Dateless records first so they don't inherit a preceding ISO date line
-  const lines = [...noDate];
-  for (const [date, docNos] of Object.entries(byDate).sort()) {
-    lines.push(date, ...docNos);
-  }
-  return lines.join('\n');
-}
-
-function dupeMsg(added, dupes, prefix = '') {
-  if (dupes > 0 && added === 0) return { text: `已重复：全部 ${dupes} 条单据已存在，未添加`, type: 'warn' };
-  if (dupes > 0) return { text: `${prefix}已添加 ${added} 条，已重复 ${dupes} 条跳过`, type: '' };
-  return { text: `${prefix}已添加 ${added} 条`, type: '' };
-}
-
-// ════════════════════════════════════════════════════════
-// CUSTOMER DROPDOWN (A panel)
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════
+// CUSTOMER DROPDOWN
+// ════════════════════════════════════════
 function toggleCustDrop() {
   const panel = document.getElementById('custDropPanel');
   if (panel.classList.contains('show')) {
@@ -1196,7 +1139,6 @@ function renderCustDrop() {
   const custs = getCustomers().filter(c => !q || c.toLowerCase().includes(q));
   const list = document.getElementById('dropList');
   list.innerHTML = '';
-
   if (!custs.length) {
     const el = document.createElement('div');
     el.className = 'drop-empty';
@@ -1204,29 +1146,26 @@ function renderCustDrop() {
     list.appendChild(el);
     return;
   }
-
   for (const name of custs) {
-    const recs = getCustRecs(name);
     const div = document.createElement('div');
     div.className = 'drop-item';
     div.appendChild(document.createTextNode(name));
-    const cnt = document.createElement('span');
-    cnt.className = 'di-count';
-    cnt.textContent = `${recs.length}条`;
-    div.appendChild(cnt);
+    const cntEl = document.createElement('span');
+    cntEl.className = 'di-count';
+    cntEl.textContent = getCustDocCount(name) + '条';
+    div.appendChild(cntEl);
     div.onclick = () => loadCustToA(name);
     list.appendChild(div);
   }
 }
 
 function loadCustToA(name) {
-  const text = custRecsToText(name);
-  document.getElementById('inputA').value = text;
+  document.getElementById('inputA').value = getCustRaw(name);
   document.getElementById('loadedCustLabel').textContent = `▸ ${name}`;
   document.getElementById('custDropPanel').classList.remove('show');
   document.getElementById('dropSearchInput').value = '';
   updateCounterA();
-  showToast(`已载入「${name}」的 ${getCustRecs(name).length} 条记录`);
+  showToast(`已载入「${name}」（${getCustDocCount(name)} 个号码）`);
 }
 
 document.addEventListener('click', e => {
@@ -1234,16 +1173,23 @@ document.addEventListener('click', e => {
   if (!wrap.contains(e.target)) document.getElementById('custDropPanel').classList.remove('show');
 });
 
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════
 // MANAGE MODAL
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════
 let activeCust = null;
 
 function openManage(name) {
   activeCust = name;
-  document.getElementById('manageTitle').textContent = `管理顾客「${name}」`;
-  renderManageTable();
+  document.getElementById('manageTitle').textContent = `管理「${name}」`;
+  refreshManageModal();
   document.getElementById('manageOverlay').classList.add('show');
+}
+
+function refreshManageModal() {
+  const raw = getCustRaw(activeCust);
+  const cnt = parseA(raw).map.size;
+  document.getElementById('manageCount').textContent = `共 ${cnt} 个单据号码`;
+  document.getElementById('manageRawTa').value = raw;
 }
 
 function closeManage() {
@@ -1251,76 +1197,47 @@ function closeManage() {
   document.getElementById('manageAddInput').value = '';
   activeCust = null;
 }
-
 document.getElementById('manageOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeManage(); });
 
-function renderManageTable() {
-  const recs = getCustRecs(activeCust);
-  const wrap = document.getElementById('manageTableWrap');
-  document.getElementById('manageCount').textContent = `共 ${recs.length} 条`;
-
-  if (!recs.length) {
-    wrap.innerHTML = '<div style="font-family:var(--mono);font-size:12px;color:var(--muted);padding:12px 0">此顾客暂无资料</div>';
-    return;
-  }
-
-  const table = document.createElement('table');
-  table.className = 'manage-table';
-  table.innerHTML = `<thead><tr>
-    <th>#</th><th>单据号码</th><th>日期</th><th></th>
-  </tr></thead>`;
-  const tbody = document.createElement('tbody');
-  recs.forEach((r, i) => {
-    const tr = document.createElement('tr');
-    const tdIdx = document.createElement('td');
-    tdIdx.style.color = 'var(--muted)';
-    tdIdx.textContent = i + 1;
-    const tdDoc = document.createElement('td');
-    tdDoc.style.cssText = 'color:var(--accent);font-weight:600';
-    tdDoc.textContent = r.docNo;
-    const tdDate = document.createElement('td');
-    tdDate.style.color = 'var(--muted)';
-    tdDate.textContent = r.date || '—';
-    const tdDel = document.createElement('td');
-    const btn = document.createElement('button');
-    btn.className = 'del-rec';
-    btn.title = '删除此条';
-    btn.textContent = '×';
-    btn.onclick = () => deleteManageRec(i);
-    tdDel.appendChild(btn);
-    tr.append(tdIdx, tdDoc, tdDate, tdDel);
-    tbody.appendChild(tr);
-  });
-  table.appendChild(tbody);
-  wrap.innerHTML = '';
-  wrap.appendChild(table);
+function saveManageRaw() {
+  saveCustRaw(activeCust, document.getElementById('manageRawTa').value.trim());
+  refreshManageModal();
+  refreshAUI();
+  renderCustDrop();
+  showToast('已保存');
 }
 
-function deleteManageRec(idx) {
-  const recs = getCustRecs(activeCust);
-  recs.splice(idx, 1);
-  saveCustRecs(activeCust, recs);
-  renderManageTable();
-  refreshAUI();
-  showToast('已删除该条记录');
+function confirmClearCust() {
+  showConfirm(
+    `清空「${activeCust}」`,
+    `确定要清空「${activeCust}」的全部资料吗？\n顾客名字保留，资料无法复原。`,
+    () => {
+      saveCustRaw(activeCust, '');
+      closeDialog();
+      refreshManageModal();
+      refreshAUI();
+      renderCustDrop();
+      showToast(`已清空「${activeCust}」的资料`);
+    }
+  );
 }
 
 function manageAdd() {
   const text = document.getElementById('manageAddInput').value.trim();
   if (!text) { showToast('请先输入资料'); return; }
-  const { added, dupes } = addRecsToCust(activeCust, text);
-  if (!added && !dupes) { showToast('未识别到任何单据号码'); return; }
+  const { added, dupes } = addRawToCust(activeCust, text);
   document.getElementById('manageAddInput').value = '';
-  renderManageTable();
+  refreshManageModal();
   refreshAUI();
   renderCustDrop();
-  const { text: msg, type } = dupeMsg(added, dupes);
-  showToast(msg, type);
+  if (dupes > 0 && added === 0) showToast(`已重复：全部 ${dupes} 条已存在，未添加`, 'warn');
+  else if (dupes > 0) showToast(`已追加（${dupes} 条重复跳过）`);
+  else showToast('已追加资料');
 }
 
-// ════════════════════════════════════════════════════════
-// QUICK PASTE + ADD (header)
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════
+// QUICK PASTE + ADD
+// ════════════════════════════════════════
 let pastedText = '';
 
 async function quickPaste() {
@@ -1328,18 +1245,17 @@ async function quickPaste() {
     const text = await navigator.clipboard.readText();
     if (!text.trim()) { showToast('剪贴板是空的'); return; }
     pastedText = text;
-    document.getElementById('pastePreviewText').textContent = text.slice(0, 180) + (text.length > 180 ? '…' : '');
+    document.getElementById('pastePreviewText').textContent = text.slice(0, 150) + (text.length > 150 ? '…' : '');
     document.getElementById('pastePreview').classList.add('show');
     showToast('已读取剪贴板，按「添加」选择顾客');
   } catch {
-    showToast('无法读取剪贴板，请先在浏览器允许权限', 'warn');
+    showToast('无法读取剪贴板，请在浏览器允许权限', 'warn');
   }
 }
 
 function quickAdd() {
   if (!pastedText.trim()) { showToast('请先按「粘贴」读取剪贴板内容'); return; }
-  const custs = getCustomers();
-  if (!custs.length) { showToast('请先新建顾客'); return; }
+  if (!getCustomers().length) { showToast('请先新建顾客'); return; }
   document.getElementById('custSelSearch').value = '';
   renderCustSelList();
   document.getElementById('custSelOverlay').classList.add('show');
@@ -1351,7 +1267,6 @@ function renderCustSelList() {
   const custs = getCustomers().filter(c => !q || c.toLowerCase().includes(q));
   const list = document.getElementById('custSelList');
   list.innerHTML = '';
-
   if (!custs.length) {
     const div = document.createElement('div');
     div.style.cssText = 'padding:14px 18px;font-family:var(--mono);font-size:11px;color:var(--muted);font-style:italic';
@@ -1359,46 +1274,39 @@ function renderCustSelList() {
     list.appendChild(div);
     return;
   }
-
   for (const name of custs) {
-    const recs = getCustRecs(name);
     const div = document.createElement('div');
     div.className = 'cust-sel-item';
     div.appendChild(document.createTextNode(name));
-    const cnt = document.createElement('span');
-    cnt.className = 'si-count';
-    cnt.textContent = `${recs.length}条`;
-    div.appendChild(cnt);
+    const cntEl = document.createElement('span');
+    cntEl.className = 'si-count';
+    cntEl.textContent = getCustDocCount(name) + '条';
+    div.appendChild(cntEl);
     div.onclick = () => addPastedToCust(name);
     list.appendChild(div);
   }
 }
 
 function addPastedToCust(name) {
-  const { added, dupes } = addRecsToCust(name, pastedText);
-  if (!added && !dupes) {
-    showToast('未识别到任何单据号码', 'warn');
-    closeCustSel();
-    return;
-  }
+  const { added, dupes } = addRawToCust(name, pastedText);
   closeCustSel();
   document.getElementById('pastePreview').classList.remove('show');
   pastedText = '';
   refreshAUI();
   renderCustDrop();
-  const { text: msg, type } = dupeMsg(added, dupes, `已添加到「${name}」：`);
-  showToast(msg, type);
+  if (dupes > 0 && added === 0) showToast(`已重复：全部单据已存在于「${name}」`, 'warn');
+  else if (dupes > 0) showToast(`已添加到「${name}」（${dupes} 条重复跳过）`);
+  else showToast(`已添加到「${name}」`);
 }
 
 function closeCustSel() {
   document.getElementById('custSelOverlay').classList.remove('show');
-  document.getElementById('custSelSearch').value = '';
 }
 document.getElementById('custSelOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeCustSel(); });
 
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════
 // MATCH
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════
 let matchedRows = [];
 
 function runMatch() {
@@ -1408,6 +1316,7 @@ function runMatch() {
   if (!allB.length) { showToast('B 组资料库是空的，请先添加资料'); return; }
 
   const { map: aMap } = parseA(textA);
+  if (!aMap.size) { showToast('A 组未识别到任何单据号码'); return; }
   matchedRows = [];
 
   for (const rec of allB) {
@@ -1423,12 +1332,10 @@ function runMatch() {
   document.getElementById('statRow').style.display = 'flex';
   document.getElementById('btnExport').disabled = matchedRows.length === 0;
   document.getElementById('resultsWrap').classList.add('show');
+  document.getElementById('resultsWrap').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   showToast(matchedRows.length ? `匹配到 ${matchedRows.length} 条记录` : '没有匹配结果');
 }
 
-// ════════════════════════════════════════════════════════
-// RENDER TABLE
-// ════════════════════════════════════════════════════════
 function renderTable(rows) {
   const tbody = document.getElementById('resultBody');
   tbody.innerHTML = '';
@@ -1448,16 +1355,15 @@ function renderTable(rows) {
   }
 }
 
-// ════════════════════════════════════════════════════════
-// EXPORT
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════
+// EXPORT EXCEL
+// ════════════════════════════════════════
 function exportExcel() {
   if (!matchedRows.length) return;
   const wb = XLSX.utils.book_new();
   const data = [['日期', '单据号码', 'B组单据行', '投注类型', '金额 (MYR)']];
-  for (const r of matchedRows) {
+  for (const r of matchedRows)
     data.push([r.dateA, r.docNo, r.line, r.betType, r.amount ? parseFloat(r.amount) : '']);
-  }
   const ws = XLSX.utils.aoa_to_sheet(data);
   ws['!cols'] = [{ wch: 14 }, { wch: 10 }, { wch: 28 }, { wch: 18 }, { wch: 12 }];
   XLSX.utils.book_append_sheet(wb, ws, '匹配结果');
@@ -1465,9 +1371,9 @@ function exportExcel() {
   showToast('Excel 已导出');
 }
 
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════
 // FILE LOADERS
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════
 function loadFile(side) {
   const inp = document.getElementById('file' + side);
   const file = inp.files[0];
@@ -1482,22 +1388,100 @@ function loadFile(side) {
   reader.readAsText(file, 'UTF-8');
 }
 
-function loadFileToAdd() {
-  const inp = document.getElementById('fileBAdd');
-  const file = inp.files[0];
+function loadFileToAdd(file) {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = e => {
     document.getElementById('inputBAdd').value = e.target.result;
     showToast(`已载入：${file.name}，请按「添加到资料库」`);
-    inp.value = '';
   };
   reader.readAsText(file, 'UTF-8');
 }
 
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════
+// B JSON IMPORT / EXPORT
+// ════════════════════════════════════════
+function exportBJSON() {
+  const data = {};
+  for (const k of getAllMonthKeys()) data[k] = getMonthData(k);
+  if (!Object.keys(data).length) { showToast('B 组资料库是空的'); return; }
+  const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `b-data-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('B 组资料已导出为 JSON');
+}
+
+function handleBImport(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      let total = 0;
+      for (const [mk, recs] of Object.entries(data)) {
+        if (!mk.startsWith(B_PFX)) continue;
+        const ex = getMonthData(mk);
+        const exSet = new Set(ex.map(r => r.docNo + '|' + r.line + '|' + r.betType));
+        const newOnes = recs.filter(r => !exSet.has(r.docNo + '|' + r.line + '|' + r.betType));
+        if (newOnes.length) { saveMonthData(mk, [...ex, ...newOnes]); total += newOnes.length; }
+      }
+      refreshBUI();
+      showToast(total > 0 ? `已导入 ${total} 条 B 组记录` : '无新记录（全部已存在）');
+    } catch { showToast('JSON 格式错误，导入失败', 'warn'); }
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+// ════════════════════════════════════════
+// DATE CHECK
+// ════════════════════════════════════════
+function toggleDateCheck() {
+  const panel = document.getElementById('dateCheckPanel');
+  if (panel.style.display !== 'none') { panel.style.display = 'none'; return; }
+
+  const allRecs = getAllBRecs();
+  if (!allRecs.length) { showToast('B 组资料库是空的'); return; }
+
+  const dateSet = new Set();
+  for (const r of allRecs) if (r.dateB) dateSet.add(r.dateB);
+
+  const byMonth = {};
+  for (const d of [...dateSet].sort()) {
+    const mo = d.slice(0, 7);
+    if (!byMonth[mo]) byMonth[mo] = [];
+    byMonth[mo].push(d);
+  }
+
+  let html = '';
+  for (const [mo, dates] of Object.entries(byMonth).sort()) {
+    const [yr, mn] = mo.split('-');
+    const label = `${yr}年${parseInt(mn)}月`;
+    const days = new Date(parseInt(yr), parseInt(mn), 0).getDate();
+    const missing = [];
+    for (let d = 1; d <= days; d++) {
+      const ds = `${yr}-${mn}-${String(d).padStart(2,'0')}`;
+      if (!dateSet.has(ds)) missing.push(d);
+    }
+    html += `<div style="margin-bottom:12px">
+      <div style="color:var(--blue);font-weight:600;font-family:var(--mono);font-size:12px;margin-bottom:4px">${label}</div>
+      <div style="color:var(--accent);font-family:var(--mono);font-size:12px">✓ 已有：${dates.map(d => d.slice(8).replace(/^0/,'')).join('、')} 日</div>
+      ${missing.length
+        ? `<div style="color:var(--warn);font-family:var(--mono);font-size:12px;margin-top:2px">⚠ 缺少：${missing.join('、')} 日</div>`
+        : `<div style="color:var(--muted);font-family:var(--mono);font-size:12px;margin-top:2px">本月日期完整</div>`}
+    </div>`;
+  }
+
+  document.getElementById('dateCheckContent').innerHTML = html;
+  panel.style.display = 'block';
+}
+
+// ════════════════════════════════════════
 // MISC
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════
 document.getElementById('inputA').addEventListener('input', updateCounterA);
 
 function updateCounterA() {
@@ -1516,7 +1500,7 @@ function clearPanelA() {
 }
 
 function esc(str) {
-  return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 function showToast(msg, type = '') {
@@ -1528,52 +1512,9 @@ function showToast(msg, type = '') {
   setTimeout(() => el.classList.remove('show'), 3500);
 }
 
-// ════════════════════════════════════════════════════════
-// DATE CHECK (B组)
-// ════════════════════════════════════════════════════════
-function toggleDateCheck() {
-  const panel = document.getElementById('dateCheckPanel');
-  if (panel.style.display !== 'none') { panel.style.display = 'none'; return; }
-
-  const allRecs = getAllBRecs();
-  if (!allRecs.length) { showToast('B 组资料库是空的'); return; }
-
-  const dateSet = new Set();
-  for (const r of allRecs) { if (r.dateB) dateSet.add(r.dateB); }
-
-  const byMonth = {};
-  for (const d of [...dateSet].sort()) {
-    const mo = d.slice(0, 7);
-    if (!byMonth[mo]) byMonth[mo] = [];
-    byMonth[mo].push(d);
-  }
-
-  let html = '';
-  for (const [mo, dates] of Object.entries(byMonth).sort()) {
-    const [yr, mn] = mo.split('-');
-    const label = `${yr}年${parseInt(mn)}月`;
-    const days = new Date(parseInt(yr), parseInt(mn), 0).getDate();
-    const missing = [];
-    for (let d = 1; d <= days; d++) {
-      const ds = `${yr}-${mn}-${String(d).padStart(2, '0')}`;
-      if (!dateSet.has(ds)) missing.push(d);
-    }
-    html += `<div style="margin-bottom:12px">
-      <div style="color:var(--blue);font-weight:600;margin-bottom:4px">${label}</div>
-      <div style="color:var(--accent)">✓ 已有：${dates.map(d => d.slice(8).replace(/^0/, '')).join('、')} 日</div>
-      ${missing.length
-        ? `<div style="color:var(--warn);margin-top:2px">⚠ 缺少：${missing.join('、')} 日</div>`
-        : `<div style="color:var(--muted);margin-top:2px">本月日期完整</div>`}
-    </div>`;
-  }
-
-  document.getElementById('dateCheckContent').innerHTML = html;
-  panel.style.display = 'block';
-}
-
-// ════════════════════════════════════════════════════════
-// B 组双向同步 (BroadcastChannel)
-// ════════════════════════════════════════════════════════
+// ════════════════════════════════════════
+// B 组 BroadcastChannel 同步
+// ════════════════════════════════════════
 const bSync = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('danJuBSync') : null;
 
 if (bSync) {
@@ -1599,50 +1540,13 @@ if (bSync) {
   };
 }
 
-function exportBJSON() {
-  const data = {};
-  for (const k of getAllMonthKeys()) data[k] = getMonthData(k);
-  if (!Object.keys(data).length) { showToast('B 组资料库是空的'); return; }
-  const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `b-data-${new Date().toISOString().slice(0,10)}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-  showToast('B 组资料已导出为 JSON');
-}
-
-function importBJSON() { document.getElementById('fileBImport').click(); }
-
-function handleBImport(file) {
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const data = JSON.parse(e.target.result);
-      let total = 0;
-      for (const [mk, recs] of Object.entries(data)) {
-        if (!mk.startsWith(B_PFX)) continue;
-        const ex = getMonthData(mk);
-        const exSet = new Set(ex.map(r => r.docNo + '|' + r.line + '|' + r.betType));
-        const newOnes = recs.filter(r => !exSet.has(r.docNo + '|' + r.line + '|' + r.betType));
-        if (newOnes.length) { saveMonthData(mk, [...ex, ...newOnes]); total += newOnes.length; }
-      }
-      refreshBUI();
-      document.getElementById('fileBImport').value = '';
-      showToast(total > 0 ? `已导入 ${total} 条 B 组记录` : '无新记录（全部已存在）');
-    } catch { showToast('JSON 格式错误，导入失败', 'warn'); }
-  };
-  reader.readAsText(file, 'UTF-8');
-}
-
-// 切回标签页时确保 UI 是最新状态
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden) { refreshAUI(); refreshBUI(); }
 });
 
-// ── Init ──
+// Init
+migrateOldAData();
+initSections();
 refreshAUI();
 refreshBUI();
 if (bSync) bSync.postMessage({ type: 'hello' });
