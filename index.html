@@ -607,8 +607,11 @@ td { padding: 9px 14px; vertical-align: middle; color: var(--text); white-space:
       <span class="no-data">（资料库是空的，请在下方添加）</span>
     </div>
 
-    <div style="margin-bottom:12px">
+    <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
       <button class="hbtn" style="color:var(--accent);border-color:var(--accent)" onclick="toggleDateCheck()">📅 检查日期完整性</button>
+      <button class="hbtn blue" onclick="importBJSON()" style="color:var(--blue);border-color:var(--blue)">⬆ 导入B组资料 (JSON)</button>
+      <button class="hbtn blue" onclick="exportBJSON()" style="color:var(--blue);border-color:rgba(61,158,255,0.5)">⬇ 导出B组资料 (JSON)</button>
+      <input type="file" id="fileBImport" accept=".json,application/json" onchange="handleBImport(this.files[0])">
     </div>
 
     <div id="dateCheckPanel" style="display:none;margin-bottom:14px;background:var(--bg);border:1px solid var(--border);padding:14px 16px">
@@ -974,6 +977,15 @@ function addToDatabase() {
   document.getElementById('inputBAdd').value = '';
   document.getElementById('fileBAdd').value = '';
   refreshBUI();
+
+  if (bSync && added > 0) {
+    const syncPayload = {};
+    for (const mk of Object.keys(groups)) {
+      const d = getMonthData(mk);
+      if (d.length) syncPayload[mk] = d;
+    }
+    bSync.postMessage({ type: 'syncNew', data: syncPayload });
+  }
 
   let msg = `已添加 ${added} 条`;
   if (skipped) msg += `，已重复 ${skipped} 条跳过`;
@@ -1559,9 +1571,76 @@ function toggleDateCheck() {
   panel.style.display = 'block';
 }
 
+// ════════════════════════════════════════════════════════
+// B 组双向同步 (BroadcastChannel)
+// ════════════════════════════════════════════════════════
+const bSync = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('danJuBSync') : null;
+
+if (bSync) {
+  bSync.onmessage = function(e) {
+    const { type, data } = e.data;
+    if (type === 'hello') {
+      const payload = {};
+      for (const k of getAllMonthKeys()) payload[k] = getMonthData(k);
+      bSync.postMessage({ type: 'syncAll', data: payload });
+      return;
+    }
+    if (type === 'syncAll' || type === 'syncNew') {
+      let merged = 0;
+      for (const [mk, recs] of Object.entries(data)) {
+        if (!mk.startsWith(B_PFX)) continue;
+        const ex = getMonthData(mk);
+        const exSet = new Set(ex.map(r => r.docNo + '|' + r.line + '|' + r.betType));
+        const toAdd = recs.filter(r => !exSet.has(r.docNo + '|' + r.line + '|' + r.betType));
+        if (toAdd.length) { saveMonthData(mk, [...ex, ...toAdd]); merged += toAdd.length; }
+      }
+      if (merged > 0) { refreshBUI(); showToast(`已同步 B 组 ${merged} 条新记录`); }
+    }
+  };
+}
+
+function exportBJSON() {
+  const data = {};
+  for (const k of getAllMonthKeys()) data[k] = getMonthData(k);
+  if (!Object.keys(data).length) { showToast('B 组资料库是空的'); return; }
+  const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `b-data-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('B 组资料已导出为 JSON');
+}
+
+function importBJSON() { document.getElementById('fileBImport').click(); }
+
+function handleBImport(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      let total = 0;
+      for (const [mk, recs] of Object.entries(data)) {
+        if (!mk.startsWith(B_PFX)) continue;
+        const ex = getMonthData(mk);
+        const exSet = new Set(ex.map(r => r.docNo + '|' + r.line + '|' + r.betType));
+        const newOnes = recs.filter(r => !exSet.has(r.docNo + '|' + r.line + '|' + r.betType));
+        if (newOnes.length) { saveMonthData(mk, [...ex, ...newOnes]); total += newOnes.length; }
+      }
+      refreshBUI();
+      document.getElementById('fileBImport').value = '';
+      showToast(total > 0 ? `已导入 ${total} 条 B 组记录` : '无新记录（全部已存在）');
+    } catch { showToast('JSON 格式错误，导入失败', 'warn'); }
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
 // ── Init ──
 refreshAUI();
 refreshBUI();
+if (bSync) bSync.postMessage({ type: 'hello' });
 </script>
 </body>
 </html>
